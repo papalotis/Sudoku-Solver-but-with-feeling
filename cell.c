@@ -2,6 +2,16 @@
 #include <math.h>
 #include <stdio.h>
 
+void array_print(int* a, int size) {
+    printf("Array %p: [", a);
+
+    for (int i = 0; i < size; i++) {
+        printf("%d", a[i]);
+        if (i < size - 1) printf(", ");
+    }
+    printf("]\n");
+}
+
 /*
 A cell instance represents a sudoku cell. Each cell has a value which is the
 "filled in" value of the cell. The index represents the cell's position in the
@@ -66,15 +76,19 @@ int cell_calculate_y(Cell* c) {
 }
 
 /*
-This function uses the fact that f(x,y) = 2^(x + y) + x is injective. It finds
+This function uses the fact that x + y * width is injective. It finds
 to which box a cell belongs using the x,y components of its 2d position and
 maps that pair to a 1d value. That is used to identify each 3x3 box on the grid
 */
 int cell_calculate_box(Cell* c) {
+    //dividing by 3 and then multiplying by 3 is redundant
+    //but it's more intuitive, this function is only used for setup
+    //so we can afford not to optimise to "death"
+
     int bx = cell_calculate_x(c) / 3;
     int by = cell_calculate_y(c) / 3;
 
-    return (int)(pow(2.0, bx + by) + bx);
+    return bx + by * 3;
 }
 
 /*
@@ -166,4 +180,37 @@ void cell_calculate_pencilmarks(Cell* c, Cell** sud) {
             stack_push(c->pencilmakrs, val);
         }
     }
+}
+
+int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces) {
+
+    if (stack_get_size(c->pencilmakrs) < 2) return 0;
+
+    stack* clone = stack_clone(c->pencilmakrs);
+    for (int i = 0; i < 9; i++) {
+        Cell* n = sud[indeces[i]];
+        if (n->index == c->index) continue;
+        if (n->value != 0) continue;
+
+        elem* cur = n->pencilmakrs->sp;
+        while (cur) {
+            stack_remove_all(clone, cur->data);
+            cur = cur->next;
+        }
+
+        if (stack_is_empty(clone)) break;
+    }
+
+    stack* new_pencilmarks;
+    stack* to_free;
+
+    if (stack_get_size(clone) == 1) {
+        stack_clear(c->pencilmakrs);
+        stack_push(c->pencilmakrs, stack_pop(clone));
+    }
+
+    free_stack(clone);
+
+    return stack_get_size(c->pencilmakrs) == 1;
+
 }

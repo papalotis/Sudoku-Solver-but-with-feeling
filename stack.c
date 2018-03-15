@@ -75,6 +75,29 @@ void stack_push(stack* s, int n) {
 }
 
 /*
+This function pushes many values to a stack
+*/
+void stack_push_many(stack* s, int* data, int len) {
+    for (int i = 0; i < len; i++) {
+        stack_push(s, data[i]);
+    }
+}
+
+stack* stack_clone(stack* s) {
+    stack* copy = create_stack();
+    int vals[s->size];
+
+    elem* cur = s->sp;
+    int counter = s->size - 1;
+    while(cur) {
+        vals[counter--] = cur->data;
+        cur = cur->next;
+    }
+    stack_push_many(copy, vals, s->size);
+    return copy;
+}
+
+/*
 This function returns the value
 */
 int stack_peek(stack* s) {
@@ -107,8 +130,69 @@ int stack_pop(stack* s) {
     s->size += -1;
     //return the value of the old head
     return r;
+}
 
 
+/*
+This function removes the first element with a specific value
+*/
+int stack_remove(stack* s, int val) {
+    //holds the element we were looking at previously
+    elem* prev = NULL;
+    //holds the element that we are inspecting
+    //(starting with the head of the stack)
+    elem* cur  = s->sp;
+    //so long as there is an element to inspect
+    while (cur != NULL) {
+        //if the element should be removed
+        if (cur->data == val) {
+            //if we need to remove the head of the list
+            if (prev == NULL) {
+                //set the stack pointer to the next of the current
+                s->sp = cur->next;
+            }
+            //otherwise if it's another element
+            else {
+                //set the next of the previous element equal
+                //the next of the current element
+                prev->next = cur->next;
+            }
+
+            //we removed an element so decreament the size of the stack by one
+            s->size += -1;
+            //free the element we want to remove
+            free_elem(cur);
+
+            //and return 1 in order to indicate that an element was removed
+            return 1;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+
+    //if we are out of the loop that means that no element should be removed
+    //return 0 to indicate that no element was removed
+    return 0;
+}
+
+/*
+This function removes the all the elements with a specific value
+and returns how many elements were removed
+*/
+int stack_remove_all(stack* s, int val) {
+    //holds how many elements have been removed
+    int count = 0;
+    //holds the result of the remove_one function
+    int rem = 1;
+    //so long as we have removed another element
+    while(rem) {
+        //try to remove another one
+        rem = stack_remove(s, val);
+        //increament the total count
+        count += rem;
+    }
+    //return how many elements were removed
+    return count;
 }
 
 /*

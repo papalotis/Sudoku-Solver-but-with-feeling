@@ -18,3 +18,4 @@ int cell_calculate_y(Cell* c);
 int cell_calculate_box(Cell* c);
 void cell_calculate_neighbor_indeces(Cell* c);
 void cell_calculate_pencilmarks(Cell* c, Cell** sud);
+int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces);

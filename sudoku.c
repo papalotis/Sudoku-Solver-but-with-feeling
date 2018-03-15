@@ -12,7 +12,8 @@ sudoku cell array (nodes) that represents all the cells that a sudoku is compris
 It has an indeces stack that is used to hold the backtracking path in which we
 are. In has a size that represents the size of the sudoku puzzle.
 nextIndex represents the index of the cell that is at the end of the backtracking
-path.
+path. rows, columns and boxes are 2d arrays that contain the indeces of the cells
+that belong to each row, column or box
 */
 
 
@@ -22,18 +23,31 @@ This function creates an empty sudoku puzzle. It sets the size to 81 (as in a
 stack, and sets nextIndex to the appropriate value
 */
 Sudoku* create_sudoku() {
+    //memory for sudoku object itself
     Sudoku* s = (Sudoku*) malloc(sizeof(Sudoku));
     s->size = 81;
+    //memory for all the nodes
     s->nodes = (Cell**) malloc(sizeof(Cell*) * s->size);
+    //empty stack
     s->indeces = create_stack();
     s->nextIndex = INDEX_UNINITIALIZED;
+
+    //allocate memory for 3 2d arrays
+    s->rows = (int**) malloc(sizeof(int*) * 9);
+    s->columns = (int**) malloc(sizeof(int*) * 9);
+    s->boxes = (int**) malloc(sizeof(int*) * 9);
+    for (int i = 0; i < 9; i++) {
+        s->rows[i] = (int*) malloc(sizeof(int) * 9);
+        s->columns[i] = (int*) malloc(sizeof(int) * 9);
+        s->boxes[i] = (int*) malloc(sizeof(int) * 9);
+    }
     return s;
 }
 
 /*
 This function frees a sudoku instance from memory. First it frees the memory used
 by each cell that defines the sudoku puzzle. Then it frees the nodes array and
-the indeces stack and lastly it frees the memory used by itself
+the indeces stack. It frees the 3 2d arrays and lastly it frees the memory used by itself
 */
 void free_sudoku(Sudoku* s) {
     for (int i = 0; i < s->size; i++) {
@@ -41,6 +55,17 @@ void free_sudoku(Sudoku* s) {
     }
     free(s->nodes);
     free_stack(s->indeces);
+
+    for (int i = 0; i < 9; i++) {
+        free(s->rows[i]);
+        free(s->columns[i]);
+        free(s->boxes[i]);
+    }
+    free(s->rows);
+    free(s->columns);
+    free(s->boxes);
+
+
     free(s);
 }
 
@@ -100,6 +125,9 @@ Sudoku* sudoku_create_from(int* data) {
         //add it to the nodes array
         s->nodes[i] = add_cell(data[i], i);
     }
+    //
+    sudoku_fill_rows_columns_boxes_arrays(s);
+
     //calculate the pencilmakrs of all the nodes of the new sudoku
     sudoku_calculate_pencilmarks(s);
     //initialize the nextIndex value
@@ -116,44 +144,45 @@ int sudoku_solve_step(Sudoku* s) {
     //the value that will be returned
     //assume we will keep on solving
     int r = SUDOKU_UNDECIDED;
-
-    //get the cell that we need to find the next value
-    Cell* c = s->nodes[s->nextIndex];
-
-    //get the next value from the pencilmakrs stack of that cell
-    int val = stack_pop(c->pencilmakrs);
-    //clean up the result of the stack (if it's negative that means the stack
-    //was empty)
-    c->value = val > 0 ? val : 0;
-
-    //if there is no value so that the sudoku is still valid
-    if (c->value == 0) {
-        //pop the last value from the indeces stack
-        //we move upwards in the backtracking tree
-        if (!stack_is_empty(s->indeces)) {
-            s->nextIndex = stack_pop(s->indeces);
-        }
-        else {
-            r = SUDOKU_NO_SOLUTUION;
-        }
-    }
-
-    //if we found a value such that the sudoku is still valid
+    if (s->nextIndex == NO_VALID_POS)
+        r = SUDOKU_SOLVED;
     else {
-        //push the current index to the indeces array
-        //we move downwards in the backtracking tree
-        stack_push(s->indeces, s->nextIndex);
 
-        //calculate the index of the next cell that we will try to fill in
-        s->nextIndex = sudoku_find_next_index(s);
+        //get the cell that we need to find the next value
+        Cell* c = s->nodes[s->nextIndex];
 
-        if (s->nextIndex == NO_VALID_POS)
-            r = SUDOKU_SOLVED;
+        //get the next value from the pencilmakrs stack of that cell
+        int val = stack_pop(c->pencilmakrs);
+        //clean up the result of the stack (if it's negative that means the stack
+        //was empty)
+        c->value = val > 0 ? val : 0;
 
-        //and calculate the pencilmakrs of the sudoku
-        sudoku_calculate_pencilmarks(s);
+        //if there is no value so that the sudoku is still valid
+        if (c->value == 0) {
+            //pop the last value from the indeces stack
+            //we move upwards in the backtracking tree
+            if (!stack_is_empty(s->indeces)) {
+                s->nextIndex = stack_pop(s->indeces);
+            }
+            else {
+                r = SUDOKU_NO_SOLUTUION;
+            }
+        }
+
+        //if we found a value such that, that the sudoku is still valid
+        else if (sudoku_is_valid(s)) {
+            //push the current index to the indeces array
+            //we move downwards in the backtracking tree
+            stack_push(s->indeces, s->nextIndex);
+
+            //calculate the index of the next cell that we will try to fill in
+            s->nextIndex = sudoku_find_next_index(s);
+
+            //and calculate the pencilmakrs of the sudoku
+            sudoku_calculate_pencilmarks(s);
+            sudoku_eliminate_pencilmakrs(s);
+        }
     }
-
     return r;
 
 }
@@ -166,12 +195,14 @@ int sudoku_solve(Sudoku* s) {
     int r = SUDOKU_UNDECIDED;
     //while the sudoku is not solved or it has NOT been determined that
     //there is no solution
+    int counter = 0;
     while(r == SUDOKU_UNDECIDED) {
         //run a step of the solution algorithm
         //and get its decision
         r = sudoku_solve_step(s);
+        counter++;
     }
-
+    printf("counter = %d\n", counter);
     //return whether the sudoku was solved or has no solution
     return r;
 }
@@ -220,6 +251,48 @@ void sudoku_calculate_pencilmarks(Sudoku* s) {
     for (int i = 0; i < s->size; i++) {
         Cell* c = s->nodes[i];
         cell_calculate_pencilmarks(c, s->nodes);
+
+    }
+}
+
+void sudoku_eliminate_pencilmakrs(Sudoku* s) {
+    int cunt = 0;
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        int cx = cell_calculate_x(c);
+        int cy = cell_calculate_y(c);
+        int cb = cell_calculate_box(c);
+
+        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->rows[cy]);
+        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->columns[cx]);
+        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->boxes[cb]);
+    }
+    // printf("cunt = %d\n", cunt);
+}
+
+
+void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s) {
+    int counters_rows[9];
+    int counters_columns[9];
+    int counters_boxes[9];
+    for (int i = 0; i < 9; i++) {
+        counters_rows[i] = 0;
+        counters_columns[i] = 0;
+        counters_boxes[i] = 0;
+    }
+
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        //x gives us which column
+        int cx = cell_calculate_x(c);
+        //y which row
+        int cy = cell_calculate_y(c);
+        //b which box
+        int cb = cell_calculate_box(c);
+
+        s->columns[cx][counters_columns[cx]++] = i;
+        s->rows[cy][counters_rows[cy]++] = i;
+        s->boxes[cb][counters_boxes[cb]++] = i;
     }
 }
 

@@ -9,6 +9,10 @@ typedef struct _Sudoku {
     int size;
     stack* indeces;
     int nextIndex;
+
+    int** rows;
+    int** columns;
+    int** boxes;
 } Sudoku;
 
 Sudoku* create_sudoku();
@@ -19,5 +23,7 @@ int sudoku_solve_step(Sudoku* s);
 int sudoku_solve(Sudoku* s);
 int sudoku_find_next_index(Sudoku* s);
 void sudoku_calculate_pencilmarks(Sudoku* s);
+void sudoku_eliminate_pencilmakrs(Sudoku* s);
+void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s);
 int sudoku_is_valid(Sudoku* s);
 int sudoku_is_solved(Sudoku* s);

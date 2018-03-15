@@ -2,19 +2,16 @@
 #include <time.h>
 #include "sudoku.h"
 
-void array_print(int* a, int size) {
-    printf("Array %p: [", a);
 
-    for (int i = 0; i < size; i++) {
-        printf("%d", a[i]);
-        if (i < size - 1) printf(", ");
-    }
-    printf("]\n");
+
+
+float getTime() {
+    return (float)clock()/CLOCKS_PER_SEC;
 }
 
 
-
 int main(int argc, char *argv[]) {
+
     //the data that will be used to create the puzzle instance
     int sud[] = {
         2,6,0,0,0,0,0,0,0,
@@ -43,15 +40,15 @@ int main(int argc, char *argv[]) {
     //print the unsolved puzzle
     sudoku_print(s);
     //mark the time at which the function starts running
-    float startTime = (float)clock()/CLOCKS_PER_SEC;
+    float startTime = getTime();
     //solve the puzzle
     int result = sudoku_solve(s);
     //mark the time at which the function ends
-    float endTime = (float)clock()/CLOCKS_PER_SEC;
+    float endTime = getTime();
     //calculate the difference in time
     float elapsed = endTime - startTime;
     //print how much time went by
-    printf("elapsed = %f\n", elapsed);
+    printf("\nSolved in %f seconds\n\n", elapsed);
     if (result == SUDOKU_SOLVED) {
         //print the solved instance of the puzzle
         sudoku_print(s);
