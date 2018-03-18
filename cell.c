@@ -152,6 +152,7 @@ void cell_calculate_pencilmarks(Cell* c, Cell** sud) {
     stack_clear(c->pencilmakrs);
     //for each value in [1,...,9]
     for (int val = 1; val <= 9; val++) {
+    // for (int val = 9; val >= 1; val--) {
         //assume the value will go in the pencilmakrs stack
         int still_valid = 1;
 
@@ -182,35 +183,119 @@ void cell_calculate_pencilmarks(Cell* c, Cell** sud) {
     }
 }
 
+/*
+This function finds whether an empty cell has a unique pencilmark
+compared to all the other empty cells of one of its houses (row, column, box)
+It receives a cell as input, as well as the cell array that defines the sudoku
+and a list of indeces that are in the same row, column or box as this cell.
+*/
 int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces) {
-
+    //if the cell has at most one pencilmark, then obviously we don't need
+    //to consider it
     if (stack_get_size(c->pencilmakrs) < 2) return 0;
 
+    //make a copy of the stack
     stack* clone = stack_clone(c->pencilmakrs);
+    //for every cell that is in that house
     for (int i = 0; i < 9; i++) {
         Cell* n = sud[indeces[i]];
+        //if it's the same cell as the one we are observing then we can ignore it
         if (n->index == c->index) continue;
+        //if it's filled in then we also ignore it
         if (n->value != 0) continue;
 
+        //start at the head of that cells pencilmarks
         elem* cur = n->pencilmakrs->sp;
-        while (cur) {
+        //so long as there are elements to consider
+        while (cur != NULL) {
+            //remove all the instances of that elements value
+            //from the cloned list
             stack_remove_all(clone, cur->data);
+            //move to the next element
             cur = cur->next;
         }
 
+        //if all the elements have been removed from the cloned stack
+        //then we can safely assume that we can break out of the loop
+        //since no other elements can be removed, and no elements can be
+        //added in this loop
         if (stack_is_empty(clone)) break;
     }
-
-    stack* new_pencilmarks;
-    stack* to_free;
-
+    //if in the end the cloned stack has exactly one value
+    //that means that this cell, has a unique pencilmark in this houses
     if (stack_get_size(clone) == 1) {
+        //remove all the elements from the pencilmarks stack of that cell
         stack_clear(c->pencilmakrs);
+        //and push the value that still is in the cloned stack to it
         stack_push(c->pencilmakrs, stack_pop(clone));
     }
 
+    //free the cloned stack from memory
     free_stack(clone);
 
+    //and return true if anything changed in the stack of that cell
     return stack_get_size(c->pencilmakrs) == 1;
 
+}
+
+/*
+This function finds whether two cells of the same house have the exact same
+two pencilmarks. If that's the case then these two values can be removed from
+all the other cells of that house
+*/
+void cell_find_naked_pairs(Cell* c, Cell** sud, int* indeces) {
+    //we only care about cells that don't have a value
+    if (c->value != 0) return;
+    //for a cell to be a valid naked pair it needs to have exactly two pencilmakrs
+    if (stack_get_size(c->pencilmakrs) != 2) return;
+
+    //for every cell in the house
+    for (int i = 0; i < 9; i++) {
+        Cell* other = sud[indeces[i]];
+
+        //ignore the cell itself in the house
+        if (c->index == other->index) continue;
+        //if the cell is not empty ignore it
+        if (other->value != 0) continue;
+        //if the cell also doesn't have two pencilmakrs ignore it
+        if (stack_get_size(other->pencilmakrs) != 2) continue;
+
+        //if we found a naked pair
+        if (stack_equals(c->pencilmakrs, other->pencilmakrs)) {
+            //we can remove the values from all the other cells
+            int val1 = stack_peek(c->pencilmakrs);
+            int val2 = c->pencilmakrs->sp->next->data;
+
+            //for every cell in the house
+            for (int i = 0; i < 9; i++) {
+                //get the cell
+                Cell* to_remove_from = sud[indeces[i]];
+                //and its index
+                int index = to_remove_from->index;
+                //if the cell has the same index as one of the two naked
+                //pair cells, then ignore it
+                if (index == c->index || index == other->index) continue;
+                //if the cell is not empty also ignore it
+                if (to_remove_from->value != 0) continue;
+
+                //remove all the instances of those two values
+                //from its pencilmarks stack
+                stack_remove_all(to_remove_from->pencilmakrs, val1);
+                stack_remove_all(to_remove_from->pencilmakrs, val2);
+
+            }
+        }
+    }
+}
+
+
+
+int cell_calculate_error(Cell* c, Cell** sud) {
+    int err = 0;
+    for (int i = 0; i < 20; i++) {
+        Cell* n = sud[c->neighbors[i]];
+        if (c->value == n->value) err++;
+    }
+
+    return err;
 }

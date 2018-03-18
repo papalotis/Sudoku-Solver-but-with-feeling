@@ -1,5 +1,7 @@
-#include "sudoku.h"
+// #include "sudoku.h"
+#include <string.h>
 #include <stdio.h>
+#include "DNA.h"
 
 #define INDEX_UNINITIALIZED -2
 #define NO_VALID_POS -1
@@ -180,7 +182,10 @@ int sudoku_solve_step(Sudoku* s) {
 
             //and calculate the pencilmakrs of the sudoku
             sudoku_calculate_pencilmarks(s);
+            //find hidden singles
             sudoku_eliminate_pencilmakrs(s);
+            //find naked pairs
+            sudoku_find_naked_pencilmarks_pairs(s);
         }
     }
     return r;
@@ -239,7 +244,7 @@ int sudoku_find_next_index(Sudoku* s) {
         if (stack_is_empty(best->pencilmakrs)) break;
     }
 
-    //if the best is non existent then return -1
+    //if the best is non existent then return NO_VALID_POS
     //otherwise return the index of the best
     return (best == NULL) ? NO_VALID_POS : best->index;
 }
@@ -255,32 +260,88 @@ void sudoku_calculate_pencilmarks(Sudoku* s) {
     }
 }
 
+/*
+This function finds hidden signles.
+https://www.learn-sudoku.com/hidden-singles.html
+*/
 void sudoku_eliminate_pencilmakrs(Sudoku* s) {
-    int cunt = 0;
+    //for every cell
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        //get its x,y,box
+        int cx = cell_calculate_x(c);
+        int cy = cell_calculate_y(c);
+        int cb = cell_calculate_box(c);
+
+        //run the hidden single with the cell in its row
+        cell_find_unique_pencilmarks(c, s->nodes, s->rows[cy]);
+        //then the column
+        cell_find_unique_pencilmarks(c, s->nodes, s->columns[cx]);
+        //then the box
+        cell_find_unique_pencilmarks(c, s->nodes, s->boxes[cb]);
+    }
+}
+
+/*
+This function finds naked pairs
+https://www.learn-sudoku.com/naked-pairs.html
+*/
+void sudoku_find_naked_pencilmarks_pairs(Sudoku* s) {
+    //for every cell
     for (int i = 0; i < s->size; i++) {
         Cell* c = s->nodes[i];
         int cx = cell_calculate_x(c);
         int cy = cell_calculate_y(c);
         int cb = cell_calculate_box(c);
 
-        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->rows[cy]);
-        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->columns[cx]);
-        cunt += cell_find_unique_pencilmarks(c, s->nodes, s->boxes[cb]);
+        cell_find_naked_pairs(c, s->nodes, s->rows[cy]);
+        cell_find_naked_pairs(c, s->nodes, s->columns[cx]);
+        cell_find_naked_pairs(c, s->nodes, s->boxes[cb]);
     }
-    // printf("cunt = %d\n", cunt);
 }
 
 
+/*
+This function receives a buffer as input and fills it
+with the indeces of the cells of the sudoku that are still empty.
+The function also returns how many cells should still be filled
+*/
+int sudoku_get_empty_indeces(Sudoku* s, int* buf) {
+    //fill the buffer with -1
+    memset(buf, -1, 81 * sizeof(int));
+    int counter = 0;
+    //for every cell
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        //if the cell is empty
+        if (c->value == 0) {
+            //add the index to the buffer
+            buf[counter] = i;
+            //increament how many empty cells there are
+            counter++;
+        }
+    }
+    //return the number of empty cells
+    return counter;
+}
+
+/*
+This function calculates the indeces of all the houses of a
+sudoku puzzle. In theory this could be hard-coded but obviously this solution
+is more elegant
+*/
 void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s) {
+    //we need in total 27 counters for 27 houses
+    //9 rows, 9 columns and 9 boxes
     int counters_rows[9];
     int counters_columns[9];
     int counters_boxes[9];
-    for (int i = 0; i < 9; i++) {
-        counters_rows[i] = 0;
-        counters_columns[i] = 0;
-        counters_boxes[i] = 0;
-    }
+    //initialize all the counters with 0
+    memset(counters_rows, 0, 9 * sizeof(int));
+    memset(counters_columns, 0, 9 * sizeof(int));
+    memset(counters_boxes, 0, 9 * sizeof(int));
 
+    //for every cell
     for (int i = 0; i < s->size; i++) {
         Cell* c = s->nodes[i];
         //x gives us which column
@@ -290,8 +351,11 @@ void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s) {
         //b which box
         int cb = cell_calculate_box(c);
 
+        //put that index in the appropriate column array and increament the counter
         s->columns[cx][counters_columns[cx]++] = i;
+        //same for row
         s->rows[cy][counters_rows[cy]++] = i;
+        //and box
         s->boxes[cb][counters_boxes[cb]++] = i;
     }
 }
@@ -330,4 +394,82 @@ filled in
 */
 int sudoku_is_solved(Sudoku* s) {
     return sudoku_is_valid(s) && (sudoku_find_next_index(s) == NO_VALID_POS);
+}
+
+
+
+
+
+
+
+//THIS WILL BE USED IS A GENETIC ALGORITHM SOLUTION THAT IS CURRENTLY NOT FULLY
+//DEVELOPED
+int sudoku_calc_error(Sudoku* s) {
+    int error = 0;
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        error += cell_calculate_error(c, s->nodes);
+    }
+    printf("error = %d\n", error);
+    return error;
+}
+
+
+//the buffer that is returned needs to be freed
+DNA** sudoku_solve_genetic_setup(int pop_size, Sudoku* s) {
+    DNA** pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
+    int indeces[81];
+    int n = sudoku_get_empty_indeces(s, indeces);
+    printf("n = %d\n", n);
+    for (int i = 0; i < pop_size; i++) {
+        pop[i] = DNA_create(indeces, n);
+    }
+
+    return pop;
+
+}
+
+
+int sudoku_solve_genetic_step(Sudoku* s, DNA** pop, int pop_size, float mut_rate) {
+    float err = 0;
+    for (int i = 0; i < pop_size; i++) {
+        DNA* d = pop[i];
+        DNA_fitness(d, s);
+        err += d->fitness;
+    }
+
+
+
+    for (int i = 0; i < pop_size; i++) {
+        pop[i]->chance = pop[i]->fitness/(float)err;
+    }
+    DNA_Array_shuffle(pop, pop_size);
+
+    DNA** new_pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
+    for (int i = 0; i < pop_size; i+= 2) {
+        DNA* parent_a = DNA_get_parent(pop, pop_size);
+        DNA* parent_b = DNA_get_parent(pop, pop_size);
+        while (parent_a == parent_b) {
+            parent_b = DNA_get_parent(pop, pop_size);
+        }
+
+        DNA* child_a = DNA_crossover(parent_a, parent_b, 1);
+        DNA* child_b = DNA_crossover(parent_a, parent_b, -1);
+        new_pop[i] = child_a;
+        new_pop[i+1] = child_b;
+    }
+
+    for (int i = 0; i < pop_size; i++) {
+        DNA_free(pop[i]);
+    }
+    memcpy(pop, new_pop, pop_size * sizeof(DNA*));
+
+    for (int i = 0; i < pop_size; i++) {
+        float r = (float)rand()/(float)(RAND_MAX);
+        if (r < mut_rate) {
+            DNA_mutate(pop[i]);
+        }
+    }
+
+
 }

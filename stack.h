@@ -26,3 +26,5 @@ void stack_clear(stack* s);
 int stack_get_size(stack* s);
 int stack_is_empty(stack* s);
 void stack_print(stack* s);
+int stack_contains(stack* s, int val);
+int stack_equals(stack* s1, stack* s2);

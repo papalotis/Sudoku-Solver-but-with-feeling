@@ -19,3 +19,5 @@ int cell_calculate_box(Cell* c);
 void cell_calculate_neighbor_indeces(Cell* c);
 void cell_calculate_pencilmarks(Cell* c, Cell** sud);
 int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces);
+void cell_find_naked_pairs(Cell* c, Cell** sud, int* indeces);
+int cell_calculate_error(Cell* c, Cell** sud);

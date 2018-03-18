@@ -223,7 +223,7 @@ int stack_is_empty(stack* s) {
 }
 
 /*
-This function prints the data of the stack to stdouts
+This function prints the data of the stack to stdout
 */
 void stack_print(stack* s) {
     //print a head
@@ -242,4 +242,53 @@ void stack_print(stack* s) {
     }
     //closing bracket for readability
     printf("]\n");
+}
+
+/*
+This function returns true if there is an elemtent in the stack
+that has the specific value, otherwise false
+*/
+int stack_contains(stack* s, int val) {
+    //start with the top of the stack
+    elem* e = s->sp;
+    //so long as there are still elements to consider
+    while (e != NULL) {
+        //if that element has the same value as the one we are looking for
+        //we can immediatelly return one
+        if (e->data == val) return 1;
+        //otherwise move to the next element
+        e = e->next;
+    }
+    //we traversed through the entire stack and couldn't find
+    //an element with that value so we can safely return false
+    return 0;
+}
+
+/*
+This function returns true, if all the elements of two stacks are equal
+1-1.
+stack_equals([3,1,5], [3,1,5]) > true
+stack_equals([3,5,1], [3,1,5]) > false
+stack_equals([3], [3,5]) > false
+*/
+int stack_equals(stack* s1, stack* s2) {
+    //if two stacks are of different size then they are obviously not equal
+    if (stack_get_size(s1) != stack_get_size(s2)) return 0;
+
+    //declare two elem variables, that will each traverse each stack
+    elem* e1, *e2;
+    //they both start at the head of each stack
+    e1 = s1->sp; e2 = s2->sp;
+    //so long as there are elements to consider
+    while (e1 != NULL) {
+        //if there are two elements that are not equal we can safely return false
+        if (e1->data != e2->data) return 0;
+        //otherwise we need to consider the next elemtent of each stack
+        e1 = e1->next;
+        e2 = e2->next;
+    }
+    //we went through both stacks completely and could not find an unequal pair
+    //therefore the stacks must be equal
+    return 1;
+
 }
