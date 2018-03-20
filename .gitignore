@@ -1,3 +1,9 @@
 a.out
 DNA.c
 DNA.h
+cell.o
+DNA.o
+main.o
+prog
+stack.o
+sudoku.o

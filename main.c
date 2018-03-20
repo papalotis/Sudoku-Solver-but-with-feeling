@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     0,9,0,0,0,0,4,0,0};
 
     //create a sudoku intance from the given array
-    Sudoku* s = sudoku_create_from(sud);
+    Sudoku* s = sudoku_create_from(sud1);
     //print the unsolved puzzle
     sudoku_print(s);
     //mark the time at which the function starts running

@@ -301,6 +301,40 @@ void sudoku_find_naked_pencilmarks_pairs(Sudoku* s) {
 }
 
 
+void box_get_value_indeces(Sudoku* s, int* indeces, stack** app) {
+    //for every possible value
+    for (int i = 1; i <= 9; i++) {
+        //for every cell in the box
+        for (int j = 0; j < 9; j++) {
+
+            Cell* c = s->nodes[indeces[j]];
+            //ignore filled in cells
+            if (c->value != 0) continue;
+
+            if (stack_contains(c->pencilmakrs, i)) {
+                stack_push(app[i], c->index);
+            }
+        }
+    }
+}
+
+// void sudoku_apply_omission(Sudoku* s) {
+//     stack* val_appearances[10];
+//     //create 9 stacks
+//     for (int i = 1; i <= 9; i++) {
+//         val_appearances[i] = create_stack();
+//     }
+//     //for every box
+//     for (int i = 0; i < 9; i++) {
+//         for (int i = 1; i <= 9; i++) {
+//             stack_clear(val_appearances[i]);
+//         }
+//         int* box_indeces = s->boxes[i];
+//         box_get_value_indeces(s, box_indeces, val_appearances);
+//
+//     }
+// }
+
 /*
 This function receives a buffer as input and fills it
 with the indeces of the cells of the sudoku that are still empty.
@@ -414,62 +448,62 @@ int sudoku_calc_error(Sudoku* s) {
     return error;
 }
 
-
-//the buffer that is returned needs to be freed
-DNA** sudoku_solve_genetic_setup(int pop_size, Sudoku* s) {
-    DNA** pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
-    int indeces[81];
-    int n = sudoku_get_empty_indeces(s, indeces);
-    printf("n = %d\n", n);
-    for (int i = 0; i < pop_size; i++) {
-        pop[i] = DNA_create(indeces, n);
-    }
-
-    return pop;
-
-}
-
-
-int sudoku_solve_genetic_step(Sudoku* s, DNA** pop, int pop_size, float mut_rate) {
-    float err = 0;
-    for (int i = 0; i < pop_size; i++) {
-        DNA* d = pop[i];
-        DNA_fitness(d, s);
-        err += d->fitness;
-    }
-
-
-
-    for (int i = 0; i < pop_size; i++) {
-        pop[i]->chance = pop[i]->fitness/(float)err;
-    }
-    DNA_Array_shuffle(pop, pop_size);
-
-    DNA** new_pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
-    for (int i = 0; i < pop_size; i+= 2) {
-        DNA* parent_a = DNA_get_parent(pop, pop_size);
-        DNA* parent_b = DNA_get_parent(pop, pop_size);
-        while (parent_a == parent_b) {
-            parent_b = DNA_get_parent(pop, pop_size);
-        }
-
-        DNA* child_a = DNA_crossover(parent_a, parent_b, 1);
-        DNA* child_b = DNA_crossover(parent_a, parent_b, -1);
-        new_pop[i] = child_a;
-        new_pop[i+1] = child_b;
-    }
-
-    for (int i = 0; i < pop_size; i++) {
-        DNA_free(pop[i]);
-    }
-    memcpy(pop, new_pop, pop_size * sizeof(DNA*));
-
-    for (int i = 0; i < pop_size; i++) {
-        float r = (float)rand()/(float)(RAND_MAX);
-        if (r < mut_rate) {
-            DNA_mutate(pop[i]);
-        }
-    }
-
-
-}
+//
+// //the buffer that is returned needs to be freed
+// DNA** sudoku_solve_genetic_setup(int pop_size, Sudoku* s) {
+//     DNA** pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
+//     int indeces[81];
+//     int n = sudoku_get_empty_indeces(s, indeces);
+//     printf("n = %d\n", n);
+//     for (int i = 0; i < pop_size; i++) {
+//         pop[i] = DNA_create(indeces, n);
+//     }
+//
+//     return pop;
+//
+// }
+//
+//
+// int sudoku_solve_genetic_step(Sudoku* s, DNA** pop, int pop_size, float mut_rate) {
+//     float err = 0;
+//     for (int i = 0; i < pop_size; i++) {
+//         DNA* d = pop[i];
+//         DNA_fitness(d, s);
+//         err += d->fitness;
+//     }
+//
+//
+//
+//     for (int i = 0; i < pop_size; i++) {
+//         pop[i]->chance = pop[i]->fitness/(float)err;
+//     }
+//     DNA_Array_shuffle(pop, pop_size);
+//
+//     DNA** new_pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
+//     for (int i = 0; i < pop_size; i+= 2) {
+//         DNA* parent_a = DNA_get_parent(pop, pop_size);
+//         DNA* parent_b = DNA_get_parent(pop, pop_size);
+//         while (parent_a == parent_b) {
+//             parent_b = DNA_get_parent(pop, pop_size);
+//         }
+//
+//         DNA* child_a = DNA_crossover(parent_a, parent_b, 1);
+//         DNA* child_b = DNA_crossover(parent_a, parent_b, -1);
+//         new_pop[i] = child_a;
+//         new_pop[i+1] = child_b;
+//     }
+//
+//     for (int i = 0; i < pop_size; i++) {
+//         DNA_free(pop[i]);
+//     }
+//     memcpy(pop, new_pop, pop_size * sizeof(DNA*));
+//
+//     for (int i = 0; i < pop_size; i++) {
+//         float r = (float)rand()/(float)(RAND_MAX);
+//         if (r < mut_rate) {
+//             DNA_mutate(pop[i]);
+//         }
+//     }
+//
+//
+// }

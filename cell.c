@@ -32,6 +32,7 @@ Cell* create_cell() {
     c->index = -1;
     c->neighbors = (int*) malloc(sizeof(int) * 20);
     c->pencilmakrs = create_stack();
+    return c;
 }
 
 /*
@@ -287,7 +288,6 @@ void cell_find_naked_pairs(Cell* c, Cell** sud, int* indeces) {
         }
     }
 }
-
 
 
 int cell_calculate_error(Cell* c, Cell** sud) {
