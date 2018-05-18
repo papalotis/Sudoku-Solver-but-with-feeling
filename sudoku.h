@@ -1,7 +1,7 @@
 #ifndef SUDOKUH
 #define SUDOKUH
 
-#include "DNA.h"
+
 #include "cell.h"
 
 #define SUDOKU_SOLVED 1
@@ -33,7 +33,6 @@ void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s);
 int sudoku_is_valid(Sudoku* s);
 int sudoku_is_solved(Sudoku* s);
 int sudoku_calc_error(Sudoku* s);
-DNA** sudoku_solve_genetic_setup(int pop_size, Sudoku* s);
-int sudoku_solve_genetic_step(Sudoku* s, DNA** pop, int pop_size, float mut_rate);
+
 
 #endif

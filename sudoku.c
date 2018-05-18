@@ -1,7 +1,7 @@
 // #include "sudoku.h"
 #include <string.h>
 #include <stdio.h>
-#include "DNA.h"
+#include "sudoku.h"
 
 #define INDEX_UNINITIALIZED -2
 #define NO_VALID_POS -1
@@ -207,7 +207,6 @@ int sudoku_solve(Sudoku* s) {
         r = sudoku_solve_step(s);
         counter++;
     }
-    printf("counter = %d\n", counter);
     //return whether the sudoku was solved or has no solution
     return r;
 }
