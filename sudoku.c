@@ -70,11 +70,54 @@ void free_sudoku(Sudoku* s) {
     free(s);
 }
 
-/*
-This function prints a sudoku instance at the state in which it is.
-A cell is "empty" if it has the value 0 in it.
-*/
-void sudoku_print(Sudoku* s) {
+char* sudoku_to_string_simple(Sudoku* s, char* buff) {
+    //a simple string is 82 bytes long
+    int str_len = 82;
+
+    //if the caller didn't provide a buffer to write
+    //we create one for ourselves.
+    //WARNING: This needs to be freed by someone but not us
+    if (buff == NULL) {
+        buff = (char*) malloc(str_len * sizeof(char));
+    }
+
+    memset(buff, 0, str_len);
+
+    //for every cell
+    for (int i = 0; i < s->size; i++) {
+        //get the value in it
+        int val = s->nodes[i]->value;
+        //convert it to a char
+        char c = (char)(val) + '0';
+        //put the char in the buffer
+        buff[i] = c;
+    }
+
+    return buff;
+
+}
+
+char* sudoku_to_string_fancy(Sudoku* s, char* buff) {
+    //a fancy string is 250 bytes long
+    int str_len = 250;
+
+    //if the caller didn't provide a buffer to write
+    //we create one for ourselves.
+    //WARNING: This needs to be freed by someone but not us
+    if (buff == NULL) {
+        buff = (char*) malloc(str_len * sizeof(char));
+    }
+
+
+
+    //some constant strings that will be used
+    char* dashes = "------+-------+------\n";
+    char* pipe = "| ";
+    char num[2];
+    char* under = "_";
+    char* space = " ";
+    char* newline = "\n";
+
     //for every cell
     for (int i = 0; i < s->size; i++) {
         //the dashes and pipes that are printed are done so as to
@@ -83,41 +126,63 @@ void sudoku_print(Sudoku* s) {
         //if we are at the beginnig of the forth or sevent line
         if (i == 27 || i == 54) {
             //print a line full of dashes
-            printf("------+-------+------\n");
+            strcat(buff, dashes);
         }
 
         //after every three cells printed in a row
         if (i % 9 == 3 || i % 9 == 6) {
             //print a pipe
-            printf("| ");
+            strcat(buff, pipe);
         }
 
         //get the value of a cell
         int val = s->nodes[i]->value;
         //for a value different from 0, we print that value
-        if (val > 0)
-            printf("%d", val);
+        if (val > 0) {
+            //convert the value to a string
+            sprintf(num, "%d", val);
+            //add it to the buffer
+            strcat(buff, num);
+        }
 
         //otherwise we print an underscore to show that, that cell
         //needs to be filled in
-        else
-            printf("_");
+        else {
+            strcat(buff, under);
+        }
 
         //after each cell if printed, print an empty character to make
         //the end result more readable
-        printf(" ");
+        strcat(buff, space);
 
         //after printing 9 cells print a newline so as to differentiate
         //between rows
-        if (i % 9 == 8) printf("\n");
+        if (i % 9 == 8) {
+            strcat(buff, newline);
+        }
     }
+
+    return buff;
+}
+
+/*
+This function prints a sudoku instance at the state in which it is.
+A cell is "empty" if it has the value 0 in it.
+*/
+void sudoku_print(Sudoku* s) {
+    //generate the string
+    char* sud_str = sudoku_to_string_fancy(s, NULL);
+    //print the string
+    printf("%s\n", sud_str);
+    //free it from memory
+    free(sud_str);
 }
 
 
 /*
 This function creates a sudoku puzzle and fills it in with the given data
 */
-Sudoku* sudoku_create_from(int* data) {
+Sudoku* sudoku_create_from_int(int* data) {
     //crete an empty sudoku instance
     Sudoku* s = create_sudoku();
     //for each value in the data
@@ -135,6 +200,29 @@ Sudoku* sudoku_create_from(int* data) {
     s->nextIndex = sudoku_find_next_index(s);
 
     //return the created sudoku
+    return s;
+}
+
+
+/*
+This function creates a sudoku puzzle from a string by converting the
+string to an integer array and then returning the result of
+sudoku_create_from_int
+*/
+Sudoku* sudoku_create_from_char(char* data) {
+    //the int array
+    int data_int[81];
+    //for every char in the string
+    for (int i = 0; i < 81; i++) {
+        //get the char
+        char c = data[i];
+        //convert it to an int
+        int n = (int)(c - '0');
+        //set the data of the int array to that number
+        data_int[i] = n;
+    }
+    //create the sudoku using the sudoku_create_from_int function
+    Sudoku* s = sudoku_create_from_int(data_int);
     return s;
 }
 

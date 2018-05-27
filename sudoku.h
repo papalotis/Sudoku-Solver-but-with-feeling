@@ -21,8 +21,11 @@ typedef struct _Sudoku {
 
 Sudoku* create_sudoku();
 void free_sudoku(Sudoku* s);
+char* sudoku_to_string_simple(Sudoku* s, char* buff);
+char* sudoku_to_string_fancy(Sudoku* s, char* buff);
 void sudoku_print(Sudoku* s);
-Sudoku* sudoku_create_from(int* data);
+Sudoku* sudoku_create_from_int(int* data);
+Sudoku* sudoku_create_from_char(char* data);
 int sudoku_solve_step(Sudoku* s);
 int sudoku_solve(Sudoku* s);
 int sudoku_find_next_index(Sudoku* s);
