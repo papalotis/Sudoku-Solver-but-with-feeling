@@ -32,9 +32,12 @@ int main(int argc, char *argv[]) {
         0,0,8,5,0,0,0,1,0,
         0,9,0,0,0,0,4,0,0
     };
+    char* sud2 = "000000008003000400090020060000079000000061200060502070008000500010000020405000003";
+    char* sud3 = "120400300300010050006000100700090000040603000003002000500080700007000005000000098";
 
     //create a sudoku intance from the given array
-    Sudoku* s = sudoku_create_from(sud1);
+    Sudoku* s = sudoku_create_from_int(sud);
+    // Sudoku* s = sudoku_create_from_char(sud3);
     //print the unsolved puzzle
     sudoku_print(s);
     //mark the time at which the function starts running
