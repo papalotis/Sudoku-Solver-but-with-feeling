@@ -3,7 +3,7 @@
 typedef struct _Cell {
 
     int index;
-
+    int x, y, box;
     int value;
     int* neighbors;
     stack* pencilmakrs;
@@ -16,6 +16,7 @@ Cell* add_cell(int val, int index);
 int cell_calculate_x(Cell* c);
 int cell_calculate_y(Cell* c);
 int cell_calculate_box(Cell* c);
+int cell_is_empty(Cell* c);
 void cell_calculate_neighbor_indeces(Cell* c);
 void cell_calculate_pencilmarks(Cell* c, Cell** sud);
 int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces);

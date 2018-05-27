@@ -1,4 +1,3 @@
-// #include "sudoku.h"
 #include <string.h>
 #include <stdio.h>
 #include "sudoku.h"
@@ -159,6 +158,7 @@ int sudoku_solve_step(Sudoku* s) {
         //was empty)
         c->value = val > 0 ? val : 0;
 
+
         //if there is no value so that the sudoku is still valid
         if (c->value == 0) {
             //pop the last value from the indeces stack
@@ -198,6 +198,12 @@ This function runs the sudoku solving algorithm up until the sudoku is solved
 int sudoku_solve(Sudoku* s) {
     //assume that we will need to run at least one more step
     int r = SUDOKU_UNDECIDED;
+
+    //in order to get to the solved instance of the puzzle we must
+    //fill this many cells
+    // int empty = sudoku_get_empty_indeces(s, NULL);
+
+
     //while the sudoku is not solved or it has NOT been determined that
     //there is no solution
     int counter = 0;
@@ -207,6 +213,8 @@ int sudoku_solve(Sudoku* s) {
         r = sudoku_solve_step(s);
         counter++;
     }
+
+    printf("\nSolved in %d steps\n", counter - 1);
     //return whether the sudoku was solved or has no solution
     return r;
 }
@@ -237,7 +245,7 @@ int sudoku_find_next_index(Sudoku* s) {
             best = c;
         }
 
-        //if the stack if the current best is empty, since the size of the stack
+        //if the stack of the current best is empty, since the size of the stack
         //will never be negative we can break out of the loop now and return the
         //current best as the best
         if (stack_is_empty(best->pencilmakrs)) break;
@@ -334,29 +342,6 @@ void box_get_value_indeces(Sudoku* s, int* indeces, stack** app) {
 //     }
 // }
 
-/*
-This function receives a buffer as input and fills it
-with the indeces of the cells of the sudoku that are still empty.
-The function also returns how many cells should still be filled
-*/
-int sudoku_get_empty_indeces(Sudoku* s, int* buf) {
-    //fill the buffer with -1
-    memset(buf, -1, 81 * sizeof(int));
-    int counter = 0;
-    //for every cell
-    for (int i = 0; i < s->size; i++) {
-        Cell* c = s->nodes[i];
-        //if the cell is empty
-        if (c->value == 0) {
-            //add the index to the buffer
-            buf[counter] = i;
-            //increament how many empty cells there are
-            counter++;
-        }
-    }
-    //return the number of empty cells
-    return counter;
-}
 
 /*
 This function calculates the indeces of all the houses of a
@@ -394,6 +379,35 @@ void sudoku_fill_rows_columns_boxes_arrays(Sudoku* s) {
 }
 
 /*
+This function receives a buffer as input and fills it
+with the indeces of the cells of the sudoku that are still empty.
+The function also returns how many cells should still be filled
+*/
+int sudoku_get_empty_indeces(Sudoku* s, int* buf) {
+    //if a buffer was given fill it with -1
+    if (buf) {
+        memset(buf, -1, 81 * sizeof(int));
+    }
+
+    int counter = 0;
+    //for every cell
+    for (int i = 0; i < s->size; i++) {
+        Cell* c = s->nodes[i];
+        //if the cell is empty
+        if (cell_is_empty(c)) {
+            //add the index to the buffer (if it was given)
+            if (buf) {
+                buf[counter] = i;
+            }
+            //increament how many empty cells there are
+            counter++;
+        }
+    }
+    //return the number of empty cells
+    return counter;
+}
+
+/*
 This function returns false if two non-empty adjecent nodes have the same value
 Otherwise true
 */
@@ -428,81 +442,3 @@ filled in
 int sudoku_is_solved(Sudoku* s) {
     return sudoku_is_valid(s) && (sudoku_find_next_index(s) == NO_VALID_POS);
 }
-
-
-
-
-
-
-
-//THIS WILL BE USED IS A GENETIC ALGORITHM SOLUTION THAT IS CURRENTLY NOT FULLY
-//DEVELOPED
-int sudoku_calc_error(Sudoku* s) {
-    int error = 0;
-    for (int i = 0; i < s->size; i++) {
-        Cell* c = s->nodes[i];
-        error += cell_calculate_error(c, s->nodes);
-    }
-    printf("error = %d\n", error);
-    return error;
-}
-
-//
-// //the buffer that is returned needs to be freed
-// DNA** sudoku_solve_genetic_setup(int pop_size, Sudoku* s) {
-//     DNA** pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
-//     int indeces[81];
-//     int n = sudoku_get_empty_indeces(s, indeces);
-//     printf("n = %d\n", n);
-//     for (int i = 0; i < pop_size; i++) {
-//         pop[i] = DNA_create(indeces, n);
-//     }
-//
-//     return pop;
-//
-// }
-//
-//
-// int sudoku_solve_genetic_step(Sudoku* s, DNA** pop, int pop_size, float mut_rate) {
-//     float err = 0;
-//     for (int i = 0; i < pop_size; i++) {
-//         DNA* d = pop[i];
-//         DNA_fitness(d, s);
-//         err += d->fitness;
-//     }
-//
-//
-//
-//     for (int i = 0; i < pop_size; i++) {
-//         pop[i]->chance = pop[i]->fitness/(float)err;
-//     }
-//     DNA_Array_shuffle(pop, pop_size);
-//
-//     DNA** new_pop = (DNA**) malloc(sizeof(DNA*) * pop_size);
-//     for (int i = 0; i < pop_size; i+= 2) {
-//         DNA* parent_a = DNA_get_parent(pop, pop_size);
-//         DNA* parent_b = DNA_get_parent(pop, pop_size);
-//         while (parent_a == parent_b) {
-//             parent_b = DNA_get_parent(pop, pop_size);
-//         }
-//
-//         DNA* child_a = DNA_crossover(parent_a, parent_b, 1);
-//         DNA* child_b = DNA_crossover(parent_a, parent_b, -1);
-//         new_pop[i] = child_a;
-//         new_pop[i+1] = child_b;
-//     }
-//
-//     for (int i = 0; i < pop_size; i++) {
-//         DNA_free(pop[i]);
-//     }
-//     memcpy(pop, new_pop, pop_size * sizeof(DNA*));
-//
-//     for (int i = 0; i < pop_size; i++) {
-//         float r = (float)rand()/(float)(RAND_MAX);
-//         if (r < mut_rate) {
-//             DNA_mutate(pop[i]);
-//         }
-//     }
-//
-//
-// }

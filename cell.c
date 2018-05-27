@@ -30,6 +30,7 @@ Cell* create_cell() {
     Cell* c = (Cell*) malloc(sizeof(Cell));
     c->value = 0;
     c->index = -1;
+    c->x = -1; c->y = -1; c->box = -1;
     c->neighbors = (int*) malloc(sizeof(int) * 20);
     c->pencilmakrs = create_stack();
     return c;
@@ -92,6 +93,10 @@ int cell_calculate_box(Cell* c) {
     return bx + by * 3;
 }
 
+int cell_is_empty(Cell* c) {
+    return c->value == 0;
+}
+
 /*
 This function calculates the indeces of the cells to which a cell is adjecent.
 Two cells are adjecent if any of their x,y,box components are equal. Also no
@@ -147,6 +152,7 @@ as a its own value.
 void cell_calculate_pencilmarks(Cell* c, Cell** sud) {
     //if the cell is not empty we don't bother with calculating the pencilmakrs
     //at all
+
     if (c->value != 0) return;
 
     //remove any values that are already in the pencilmakrs stack
@@ -159,7 +165,7 @@ void cell_calculate_pencilmarks(Cell* c, Cell** sud) {
 
         //iterate over all the neighbor indeces
         for (int i = 0; i < 20; i++) {
-            //the index of i'th the neighbor
+            //the index of the i'th neighbor
             int n_index = c->neighbors[i];
 
             //get the cell at that position
