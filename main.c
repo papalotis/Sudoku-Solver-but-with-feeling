@@ -59,7 +59,6 @@ void handle_args(int argc, char *argv[])
             print = 0;
         }
     }
-    free(array);
 }
 
 int main(int argc, char *argv[])
