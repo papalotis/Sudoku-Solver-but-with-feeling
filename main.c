@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
     handle_args(argc, argv);
 
     //the maximum amount of sudokus we want to read from a file
-    int num_sudokus = 500;
-    char **sud_str_array = create_sudoku_string_array_from_file("hardest_sudokus.txt", num_sudokus);
+    int num_sudokus = get_number_of_lines_in_file(filename);
+    char **sud_str_array = create_sudoku_string_array_from_file(filename, num_sudokus);
 
     for (int i = 0; i < 5; i++)
     {
