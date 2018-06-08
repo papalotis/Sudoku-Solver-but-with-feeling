@@ -70,7 +70,12 @@ int main(int argc, char *argv[])
     int num_sudokus = get_number_of_lines_in_file(filename);
     char **sud_str_array = create_sudoku_string_array_from_file(filename, num_sudokus);
 
-    for (int i = 0; i < 5; i++)
+    int solved = 0;
+    int not_solved = 0;
+
+    float timeWeStartGoingThoughThePuzzle = getTime();
+
+    for (int i = 0; i < num_sudokus; i++)
     {
         char *sud_to_solve = sud_str_array[i];
         if (strlen(sud_to_solve) == 0)
@@ -81,15 +86,15 @@ int main(int argc, char *argv[])
         //print the unsolved puzzle
         sudoku_print(s);
         //mark the time at which the function starts running
-        float startTime = getTime();
+        float thisStartTime = getTime();
 
         int result, steps;
-        //solve the puzzle
+        //attempt solve the puzzle
         sudoku_solve(s, &result, &steps);
         //mark the time at which the function ends
-        float endTime = getTime();
+        float thisEndTime = getTime();
         //calculate the difference in time
-        float elapsed = endTime - startTime;
+        float elapsed = thisEndTime - thisStartTime;
         //print how much time went by
         printf("Solved in %f seconds\n", elapsed);
         printf("Solved in %d steps\n\n", steps);
@@ -107,6 +112,16 @@ int main(int argc, char *argv[])
 
         //free the sudoku we created
         free_sudoku(s);
+    }
+
+    float timeWeFinishGoingThoughThePuzzle = getTime();
+    float totalTime = timeWeFinishGoingThoughThePuzzle - timeWeStartGoingThoughThePuzzle;
+    if (print || 1)
+    {
+        printf("Attempted to solve %d sudokus\n", solved + not_solved);
+        printf("For %d of them a solution was found\n", solved);
+        printf("%.2f%% of the sudokus were solved\n", 100 * (float)solved / (solved + not_solved));
+        printf("Total time: %.2f seconds\n", totalTime);
     }
 
     free_sudoku_string_array(sud_str_array, num_sudokus);
