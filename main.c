@@ -33,22 +33,12 @@ int main(int argc, char *argv[])
     char *sud3 = "120400300300010050006000100700090000040603000003002000500080700007000005000000098";
     char *sud4 = "000000003090106740704300690500012004000000000400860007043001802067908030800000000";
 
-    // int num_sud = 400;
-    // int sud_len = 82;
-    // char** sudokus = (char**) malloc(num_sud * sizeof(char*));
-    // for (int i = 0; i < num_sud; i++) {
-    //     sudokus[i] = (char*)  malloc(sud_len * sizeof(char ));
-    // }
-
-    // printf("before reading the file\n");
-    // get_sudokus_from_file("hardest_sudokus.txt", sudokus, num_sud);
-    // printf("after reading the file");
-    // char* one_sud = sudokus[0];
-    // printf("%s\n", one_sud);
+    char *sudSolvable = "000040009002010000500000073090000000004000100000507000001020000000003085000000000";
+    char *sudNotSolvable = "000000000000003085001020000000507000004000100090000000500000073002010000000040009";
 
     //create a sudoku intance from the given array
     // Sudoku *s = sudoku_create_from_int(sud);
-    Sudoku *s = sudoku_create_from_char(sud3);
+    Sudoku *s = sudoku_create_from_char(sudNotSolvable);
     //print the unsolved puzzle
     sudoku_print(s);
     //mark the time at which the function starts running
