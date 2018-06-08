@@ -35,10 +35,29 @@ int print = 1;
 
 void handle_args(int argc, char *argv[])
 {
-    //free the string array
-    for (int i = 0; i < size; i++)
+
+    char *file_flag = "-f";
+    char *no_print = "--noprint";
+    char *no_print_abr = "-np";
+
+    for (int i = 1; i < argc; i++)
     {
-        free(array[i]);
+        char *arg = argv[i];
+        //if we will read from a file
+        if (strequals(arg, file_flag))
+        {
+            //we need to look at the next argument
+            i++;
+            //get the filename
+            char *fname = argv[i];
+            //put the argument in the global filename variable
+            memset(filename, 0, 40);
+            strcat(filename, fname);
+        }
+        if (strequals(arg, no_print) || strequals(arg, no_print_abr))
+        {
+            print = 0;
+        }
     }
     free(array);
 }
@@ -46,31 +65,7 @@ void handle_args(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 
-    //the data that will be used to create the puzzle instance
-    int sud[] = {
-        0, 0, 0, 0, 4, 0, 0, 0, 9,
-        0, 0, 2, 0, 1, 0, 0, 0, 0,
-        5, 0, 0, 0, 0, 0, 0, 7, 3,
-        0, 9, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 4, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 5, 0, 7, 0, 0, 0,
-        0, 0, 1, 0, 2, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 3, 0, 8, 5,
-        0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    int sud1[] = {
-        8, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 3, 6, 0, 0, 0, 0, 0,
-        0, 7, 0, 0, 9, 0, 2, 0, 0,
-        0, 5, 0, 0, 0, 7, 0, 0, 0,
-        0, 0, 0, 0, 4, 5, 7, 0, 0,
-        0, 0, 0, 1, 0, 0, 0, 3, 0,
-        0, 0, 1, 0, 0, 0, 0, 6, 8,
-        0, 0, 8, 5, 0, 0, 0, 1, 0,
-        0, 9, 0, 0, 0, 0, 4, 0, 0};
-    char *sud2 = "000000008003000400090020060000079000000061200060502070008000500010000020405000003";
-    char *sud3 = "120400300300010050006000100700090000040603000003002000500080700007000005000000098";
-    char *sud4 = "000000003090106740704300690500012004000000000400860007043001802067908030800000000";
+    handle_args(argc, argv);
 
     //the maximum amount of sudokus we want to read from a file
     int num_sudokus = 500;
