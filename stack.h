@@ -1,3 +1,7 @@
+
+#if !defined(STACK_H)
+#define STACK_H
+
 #include <stdlib.h>
 
 typedef struct _elem {
@@ -28,3 +32,7 @@ int stack_is_empty(stack* s);
 void stack_print(stack* s);
 int stack_contains(stack* s, int val);
 int stack_equals(stack* s1, stack* s2);
+
+
+#endif // STACK_H
+

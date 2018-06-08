@@ -1,3 +1,7 @@
+
+#if !defined(CELL_H)
+#define CELL_H
+
 #include "stack.h"
 
 typedef struct _Cell {
@@ -22,3 +26,7 @@ void cell_calculate_pencilmarks(Cell* c, Cell** sud);
 int cell_find_unique_pencilmarks(Cell* c, Cell** sud, int* indeces);
 void cell_find_naked_pairs(Cell* c, Cell** sud, int* indeces);
 int cell_calculate_error(Cell* c, Cell** sud);
+
+
+#endif // CELL_H
+
