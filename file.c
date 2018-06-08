@@ -9,7 +9,6 @@ char **get_sudokus_from_file(char *fname, char **buff, int buff_len)
     if (sudoku_file != NULL)
     {
         int counter = 0;
-        int len = 82;
         char c;
         while ((c = fgetc(sudoku_file)) != EOF)
         {
@@ -21,7 +20,9 @@ char **get_sudokus_from_file(char *fname, char **buff, int buff_len)
                 str[0] = c;
                 strcat(buff[counter], str);
             }
-            // printf("%d\n", counter);
+            //if we have filled our buffer then break out of the reading loop
+            if (counter == buff_len)
+                break;
         }
     }
     fclose(sudoku_file);
