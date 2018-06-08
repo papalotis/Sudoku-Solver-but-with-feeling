@@ -4,22 +4,36 @@
 #include "file.h"
 #include "utils.h"
 
-char **create_sudoku_string_array_from_file(char *filename, int num_sudokus)
-{
+//the data that will be used to create the puzzle instance
+int sud[] = {
+    0, 0, 0, 0, 4, 0, 0, 0, 9,
+    0, 0, 2, 0, 1, 0, 0, 0, 0,
+    5, 0, 0, 0, 0, 0, 0, 7, 3,
+    0, 9, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 4, 0, 0, 0, 1, 0, 0,
+    0, 0, 0, 5, 0, 7, 0, 0, 0,
+    0, 0, 1, 0, 2, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 3, 0, 8, 5,
+    0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    //allocate space for the sudoku strings
-    char **sud_str_array = (char **)malloc(num_sudokus * sizeof(char *));
-    for (int i = 0; i < num_sudokus; i++)
-    {
-        //allocate memory for every sudoku string
-        sud_str_array[i] = (char *)malloc(90 * sizeof(char));
-        memset(sud_str_array[i], 0, 90);
-    }
+int sud1[] = {
+    8, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 3, 6, 0, 0, 0, 0, 0,
+    0, 7, 0, 0, 9, 0, 2, 0, 0,
+    0, 5, 0, 0, 0, 7, 0, 0, 0,
+    0, 0, 0, 0, 4, 5, 7, 0, 0,
+    0, 0, 0, 1, 0, 0, 0, 3, 0,
+    0, 0, 1, 0, 0, 0, 0, 6, 8,
+    0, 0, 8, 5, 0, 0, 0, 1, 0,
+    0, 9, 0, 0, 0, 0, 4, 0, 0};
+char *sud2 = "000000008003000400090020060000079000000061200060502070008000500010000020405000003";
+char *sud3 = "120400300300010050006000100700090000040603000003002000500080700007000005000000098";
+char *sud4 = "000000003090106740704300690500012004000000000400860007043001802067908030800000000";
 
-    return get_sudokus_from_file(filename, sud_str_array, num_sudokus);
-}
+char filename[40] = "hardest_sudokus.txt";
+int print = 1;
 
-void free_sudoku_string_array(char **array, int size)
+void handle_args(int argc, char *argv[])
 {
     //free the string array
     for (int i = 0; i < size; i++)
