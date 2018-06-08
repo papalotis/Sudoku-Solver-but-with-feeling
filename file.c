@@ -29,11 +29,25 @@ char **get_sudokus_from_file(char *fname, char **buff, int buff_len)
     return buff;
 }
 
-int get_file_size(FILE *f)
+int get_number_of_lines_in_file(char *filename)
 {
-    rewind(f);
-    fseek(f, 0, SEEK_END);
-    int size = ftell(f);
-    rewind(f);
-    return size;
+    //assume the file doesn't exist
+    //a non existent file doesn't have any lines in it
+    int lines = 0;
+
+    FILE *fp = fopen(filename, "r");
+    if (fp != NULL)
+    {
+        //if a file exists then it has at least one line
+        lines = 1;
+        char c;
+        while ((c = fgetc(fp)) != EOF)
+        {
+            //for every newline we see increament the lines of the file
+            lines += (c == '\n');
+        }
+    }
+    fclose(fp);
+
+    return lines;
 }
