@@ -273,17 +273,6 @@ Sudoku *sudoku_create_from_char(char *data)
  */
 int sudoku_solve_step(Sudoku *s)
 {
-    if (s->nextIndex == 40)
-    {
-        printf("the guess for the first was wrong\n");
-        stack_print(s->nodes[40]->pencilmakrs);
-    }
-
-    // if (!stack_is_empty(s->nodes[40]->pencilmakrs))
-    // {
-
-    // }
-
     //the value that will be returned
     //assume we will keep on solving
     int r = SUDOKU_UNDECIDED;
@@ -327,14 +316,9 @@ int sudoku_solve_step(Sudoku *s)
 
             //calculate the index of the next cell that we will try to fill in
             s->nextIndex = sudoku_find_next_index(s);
-
-            //and calculate the pencilmakrs of the sudoku
-            sudoku_calculate_pencilmarks(s);
-            //find hidden singles
-            sudoku_eliminate_pencilmakrs(s);
-            //find naked pairs
-            sudoku_find_naked_pencilmarks_pairs(s);
         }
+
+        sudoku_do_pencilmarks(s);
     }
     return r;
 }
@@ -365,6 +349,18 @@ int sudoku_solve(Sudoku *s)
     printf("\nSolved in %d steps\n", counter - 1);
     //return whether the sudoku was solved or has no solution
     return r;
+}
+
+int sudoku_do_pencilmarks(Sudoku *s)
+{
+    //and calculate the pencilmakrs of the sudoku
+    sudoku_calculate_pencilmarks(s);
+    //find hidden singles
+    sudoku_eliminate_pencilmakrs(s);
+    // //find naked pairs
+    sudoku_find_naked_pencilmarks_pairs(s);
+
+    return 1;
 }
 
 /*
@@ -430,6 +426,10 @@ void sudoku_eliminate_pencilmakrs(Sudoku *s)
     for (int i = 0; i < s->size; i++)
     {
         Cell *c = s->nodes[i];
+
+        if (c->value != 0)
+            continue;
+
         //get its x,y,box
         int cx = cell_calculate_x(c);
         int cy = cell_calculate_y(c);

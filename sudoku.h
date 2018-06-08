@@ -29,6 +29,7 @@ Sudoku *sudoku_create_from_int(int *data);
 Sudoku *sudoku_create_from_char(char *data);
 int sudoku_solve_step(Sudoku *s);
 int sudoku_solve(Sudoku *s);
+int sudoku_do_pencilmarks(Sudoku *s);
 int sudoku_find_next_index(Sudoku *s);
 void sudoku_calculate_pencilmarks(Sudoku *s);
 void sudoku_eliminate_pencilmakrs(Sudoku *s);
