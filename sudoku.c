@@ -316,9 +316,8 @@ int sudoku_solve_step(Sudoku *s)
 
             //calculate the index of the next cell that we will try to fill in
             s->nextIndex = sudoku_find_next_index(s);
+            sudoku_do_pencilmarks(s);
         }
-
-        sudoku_do_pencilmarks(s);
     }
     return r;
 }
@@ -346,9 +345,11 @@ int sudoku_solve(Sudoku *s, int *result, int *steps)
         counter++;
     }
 
-        //return whether the sudoku was solved or has no solution
+    //return whether the sudoku was solved or has no solution
     *result = r;
     *steps = counter - 1;
+
+    return r;
 }
 
 int sudoku_do_pencilmarks(Sudoku *s)
