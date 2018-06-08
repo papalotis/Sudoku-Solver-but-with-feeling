@@ -326,7 +326,7 @@ int sudoku_solve_step(Sudoku *s)
 /*
 This function runs the sudoku solving algorithm up until the sudoku is solved
 */
-int sudoku_solve(Sudoku *s)
+int sudoku_solve(Sudoku *s, int *result, int *steps)
 {
     //assume that we will need to run at least one more step
     int r = SUDOKU_UNDECIDED;
@@ -346,9 +346,9 @@ int sudoku_solve(Sudoku *s)
         counter++;
     }
 
-    printf("\nSolved in %d steps\n", counter - 1);
-    //return whether the sudoku was solved or has no solution
-    return r;
+        //return whether the sudoku was solved or has no solution
+    *result = r;
+    *steps = counter - 1;
 }
 
 int sudoku_do_pencilmarks(Sudoku *s)
