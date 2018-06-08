@@ -83,8 +83,12 @@ int main(int argc, char *argv[])
 
         //create a sudoku intance from the given array
         Sudoku *s = sudoku_create_from_char(sud_to_solve);
-        //print the unsolved puzzle
-        sudoku_print(s);
+        if (print)
+        {
+            //print the unsolved puzzle
+            sudoku_print(s);
+        }
+
         //mark the time at which the function starts running
         float thisStartTime = getTime();
 
@@ -96,18 +100,29 @@ int main(int argc, char *argv[])
         //calculate the difference in time
         float elapsed = thisEndTime - thisStartTime;
         //print how much time went by
-        printf("Solved in %f seconds\n", elapsed);
-        printf("Solved in %d steps\n\n", steps);
+        if (print)
+        {
+            printf("Solved in %f seconds\n", elapsed);
+            printf("Solved in %d steps\n\n", steps);
+        }
         //if the puzzle had a solution
         if (result == SUDOKU_SOLVED)
         {
             //print the solved instance of the puzzle
-            sudoku_print(s);
+            if (print)
+            {
+                sudoku_print(s);
+            }
+            solved++;
         }
         else
         {
             //otherwise, inform the user that that puzzle was unsolvable
-            printf("This sudoku puzzle has no solution\n");
+            if (print)
+            {
+                printf("This sudoku puzzle has no solution\n");
+            }
+            not_solved++;
         }
 
         //free the sudoku we created
