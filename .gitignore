@@ -1,6 +1,6 @@
 a.out
-DNA.c
-DNA.h
 *.o
+*save
 prog
 .vscode
+
