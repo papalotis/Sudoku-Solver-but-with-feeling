@@ -71,15 +71,14 @@ void free_sudoku(Sudoku *s)
     free(s);
 }
 
-/*This function converts a sudoku to a string. It receives a sudoku
-and an optional string buffer as input and returns a string buffer
-as output that contains the values of each cell. The sudoku string
-has the following format, it is intended for data flow between programs
-not for readability
-
-000040009002010000500000073090000000004000100000507000001020000000003085000000000
-
-*/
+/** This function converts a sudoku to a string. It receives a sudoku
+ * and an optional string buffer as input and returns a string buffer
+ * as output that contains the values of each cell. The sudoku string
+ * has the following format, it is intended for data flow between programs
+ * not for readability
+ * 
+ * 000040009002010000500000073090000000004000100000507000001020000000003085000000000
+ */
 char *sudoku_to_string_simple(Sudoku *s, char *buff)
 {
     //a simple string is 82 bytes long
@@ -109,26 +108,26 @@ char *sudoku_to_string_simple(Sudoku *s, char *buff)
     return buff;
 }
 
-/*
-This function converts a sudoku to a string. It receives a sudoku
-and an optional string buffer as input and returns a string buffer
-as output that contains the values of each cell. The sudoku string
-has the following format, it is intended for readability not for
-data flow
-
-_ _ _ | _ 4 _ | _ _ 9
-_ _ 2 | _ 1 _ | _ _ _
-5 _ _ | _ _ _ | _ 7 3
-------+-------+------
-_ 9 _ | _ _ _ | _ _ _
-_ _ 4 | _ _ _ | 1 _ _
-_ _ _ | 5 _ 7 | _ _ _
-------+-------+------
-_ _ 1 | _ 2 _ | _ _ _
-_ _ _ | _ _ 3 | _ 8 5
-_ _ _ | _ _ _ | _ _ _
-
-*/
+/**
+ * This function converts a sudoku to a string. It receives a sudoku
+ * and an optional string buffer as input and returns a string buffer
+ * as output that contains the values of each cell. The sudoku string
+ * has the following format, it is intended for readability not for
+ * data flow
+ * 
+ * _ _ _ | _ 4 _ | _ _ 9
+ * _ _ 2 | _ 1 _ | _ _ _
+ * 5 _ _ | _ _ _ | _ 7 3
+ * ------+-------+------
+ * _ 9 _ | _ _ _ | _ _ _
+ * _ _ 4 | _ _ _ | 1 _ _
+ * _ _ _ | 5 _ 7 | _ _ _
+ * ------+-------+------
+ * _ _ 1 | _ 2 _ | _ _ _
+ * _ _ _ | _ _ 3 | _ 8 5
+ * _ _ _ | _ _ _ | _ _ _
+ * 
+ */
 char *sudoku_to_string_fancy(Sudoku *s, char *buff)
 {
     //a fancy string is 250 bytes long
@@ -205,10 +204,10 @@ char *sudoku_to_string_fancy(Sudoku *s, char *buff)
     return buff;
 }
 
-/*
-This function prints a sudoku instance at the state in which it is.
-A cell is "empty" if it has the value 0 in it.
-*/
+/**
+ * This function prints a sudoku instance at the state in which it is.
+ * A cell is "empty" if it has the value 0 in it.
+ */
 void sudoku_print(Sudoku *s)
 {
     //generate the string
@@ -219,9 +218,9 @@ void sudoku_print(Sudoku *s)
     free(sud_str);
 }
 
-/*
-This function creates a sudoku puzzle and fills it in with the given data
-*/
+/**
+ * This function creates a sudoku puzzle and fills it in with the given data
+ */
 Sudoku *sudoku_create_from_int(int *data)
 {
     //crete an empty sudoku instance
@@ -245,11 +244,11 @@ Sudoku *sudoku_create_from_int(int *data)
     return s;
 }
 
-/*
-This function creates a sudoku puzzle from a string by converting the
-string to an integer array and then returning the result of the
-sudoku_create_from_int function
-*/
+/**
+ * This function creates a sudoku puzzle from a string by converting the
+ * string to an integer array and then returning the result of the
+ * sudoku_create_from_int function
+ */
 Sudoku *sudoku_create_from_char(char *data)
 {
     //the int array
@@ -269,11 +268,22 @@ Sudoku *sudoku_create_from_char(char *data)
     return s;
 }
 
-/*
-This function runs one step of the solving algorithm
-*/
+/**
+ * This function runs one step of the solving algorithm
+ */
 int sudoku_solve_step(Sudoku *s)
 {
+    if (s->nextIndex == 40)
+    {
+        printf("the guess for the first was wrong\n");
+        stack_print(s->nodes[40]->pencilmakrs);
+    }
+
+    // if (!stack_is_empty(s->nodes[40]->pencilmakrs))
+    // {
+
+    // }
+
     //the value that will be returned
     //assume we will keep on solving
     int r = SUDOKU_UNDECIDED;
