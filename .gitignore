@@ -1,9 +1,6 @@
 a.out
 DNA.c
 DNA.h
-cell.o
-DNA.o
-main.o
+*.o
 prog
-stack.o
-sudoku.o
+.vscode
