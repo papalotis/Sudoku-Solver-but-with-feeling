@@ -1,11 +1,14 @@
 #include "utils.h"
 
-void array_print(int* a, int size) {
+void array_print(int *a, int size)
+{
     printf("Array %p: [", a);
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         printf("%d", a[i]);
-        if (i < size - 1) printf(", ");
+        if (i < size - 1)
+            printf(", ");
     }
     printf("]\n");
 }
