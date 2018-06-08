@@ -2,15 +2,6 @@
 #include <math.h>
 #include <stdio.h>
 
-void array_print(int* a, int size) {
-    printf("Array %p: [", a);
-
-    for (int i = 0; i < size; i++) {
-        printf("%d", a[i]);
-        if (i < size - 1) printf(", ");
-    }
-    printf("]\n");
-}
 
 /*
 A cell instance represents a sudoku cell. Each cell has a value which is the
