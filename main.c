@@ -165,7 +165,10 @@ int main(int argc, char *argv[])
         Sudoku *s = sudoku_create_from_char(sud_to_solve, with_pencilmarks);
 
         if (print) //print the unsolved puzzle if the user wants us to
+        {
+            printf("\n\n");
             sudoku_print(s);
+        }
 
         //get how many cells are empty before we start solving for this sudoku
         emptyAtStartForEach[i] = sudoku_get_empty_indeces(s, NULL);
