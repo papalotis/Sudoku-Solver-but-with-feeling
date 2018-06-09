@@ -1,9 +1,6 @@
-a.out
 *.o
-*save
 prog
 .vscode
-sudoku.csv
-output.txt
-log*
+data/*
+logs/*
 
