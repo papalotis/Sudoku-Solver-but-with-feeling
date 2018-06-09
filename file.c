@@ -12,6 +12,15 @@ char **get_sudokus_from_file(char *fname, char **buff, int buff_len)
         char c;
         while ((c = fgetc(sudoku_file)) != EOF)
         {
+            if (c == ',')
+            {
+                while (1)
+                {
+                    c = fgetc(sudoku_file);
+                    if (c == '\n')
+                        break;
+                }
+            }
             if (c == '\n')
                 counter++;
             else
