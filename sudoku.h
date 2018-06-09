@@ -13,6 +13,7 @@ typedef struct _Sudoku
     Cell **nodes;
     int size;
     stack *indeces;
+    stack *indeces_history;
     int nextIndex;
 
     int **rows;

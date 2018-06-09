@@ -27,8 +27,9 @@ Sudoku *create_sudoku()
     s->size = 81;
     //memory for all the nodes
     s->nodes = (Cell **)malloc(sizeof(Cell *) * s->size);
-    //empty stack
+    //empty stack for the indeces and their history
     s->indeces = create_stack();
+    s->indeces_history = create_stack();
     //we haven't started solving
     s->nextIndex = INDEX_UNINITIALIZED;
     s->with_pencilmarks = 1;
@@ -64,6 +65,7 @@ void free_sudoku(Sudoku *s)
 
     //free the indeces stack
     free_stack(s->indeces);
+    free_stack(s->indeces_history);
 
     //for every row in the
     //three 2d arrays
@@ -310,6 +312,7 @@ int sudoku_solve_step(Sudoku *s)
     }
     else
     {
+        stack_push(s->indeces_history, s->nextIndex);
 
         //get the cell that we need to find the next value
         Cell *c = s->nodes[s->nextIndex];
