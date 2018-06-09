@@ -1,6 +1,6 @@
 *.o
 prog
 .vscode
-data/*
+sudoku.csv
 logs/*
 
