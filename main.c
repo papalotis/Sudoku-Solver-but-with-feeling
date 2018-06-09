@@ -7,7 +7,7 @@
 
 /*GLOBAL VARS*/
 //the name of the file we want to open
-char filename[40] = "hardest_sudokus.txt";
+char filename[40] = "data/hardest_sudokus.txt";
 
 //whether we want to print the result of each sudoku
 int print = 1;
@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
     memset(emptyAtStartForEach, 0, num_sudokus);
     memset(timeForEach, 0, num_sudokus);
 
+    float avgTime = 0;
+    float avgSteps = 0;
+
     //get the time where we start solvin
     float timeWeStartGoingThoughThePuzzles = getTime();
 
@@ -158,6 +161,9 @@ int main(int argc, char *argv[])
         stepsForEach[i] = steps;
         timeForEach[i] = elapsed;
 
+        avgTime += elapsed;
+        avgSteps += steps;
+
         //print how much time went by and how many steps it took us
         //only if the user wants us to
         if (print)
@@ -189,6 +195,9 @@ int main(int argc, char *argv[])
         free_sudoku(s);
     }
 
+    avgSteps /= num_sudokus;
+    avgTime /= num_sudokus;
+
     //get the time after we have solved all the puzzles
     float timeWeFinishGoingThoughThePuzzle = getTime();
     //and calculate how much time elapsed since the start
@@ -204,12 +213,14 @@ int main(int argc, char *argv[])
     char timeBuff[40];
 
     //inform the user about the final results
-    printf("Attempted to solve %d sudokus\n", solved + not_solved);
+    printf("Attempted to solve %d sudoku%s\n", num_sudokus, (num_sudokus != 1) ? "s" : "");
     printf("For %d of them a solution was found\n", solved);
-    printf("%.2f%% of the sudokus were solved\n", 100 * (float)solved / (solved + not_solved));
+    printf("%.2f%% of the sudokus were solved\n", 100 * (float)solved / (num_sudokus));
     printf("Median steps until solution %d\n", stepsForEach[num_sudokus / 2]);
+    printf("Average steps for solution %.0f\n", avgSteps);
     printf("Median empty cells at start %d\n", emptyAtStartForEach[num_sudokus / 2]);
     printf("Median time for solution %.4fs\n", timeForEach[num_sudokus / 2]);
+    printf("Average time for solution %.4fs\n", avgTime);
 
     printf("Total time: %s\n", format_time_seconds(totalTime, timeBuff, 40));
 

@@ -101,15 +101,21 @@ char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
     memset(buff, 0, buff_size);
 
     //some constants
-    char *minutes_suffix = " minutes";
-    char *seconds_suffix = " seconds";
+    char *s = "s";
+    char *minutes_suffix = " minute";
+    char *seconds_suffix = " second";
+    char *millis_suffix = " millis";
     char *commaspace = ", ";
     char num_buffer[20];
 
     //get the number of minutes
     float minutes = floor(timeSeconds / 60.0f);
     //get the number of seconds that should be expressed as seconds
-    float seconds = timeSeconds - minutes * 60.0f;
+    float secondsNotOver60 = timeSeconds - minutes * 60.0f;
+    float seconds = floor(secondsNotOver60);
+
+    float millis = floor(1000 * (secondsNotOver60 - seconds));
+
     //if an amount of minutes should be printed
     if (minutes > 0)
     {
@@ -120,6 +126,8 @@ char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
         strcat(buff, num_buffer);
         //with the appropriate suffix
         strcat(buff, minutes_suffix);
+        if (minutes > 1)
+            strcat(buff, s);
     }
 
     //if both minutes and seconds will be printed
@@ -133,11 +141,27 @@ char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
     if (seconds > 0)
     {
         //convert the number to a string
-        sprintf(num_buffer, "%.2f", seconds);
+        sprintf(num_buffer, "%.0f", seconds);
         //add it to the buffer
         strcat(buff, num_buffer);
         //and add its suffix
         strcat(buff, seconds_suffix);
+        if (seconds > 1)
+            strcat(buff, s);
+    }
+    if (seconds > 0 && millis > 0)
+    {
+        //print a comma betweem them
+        strcat(buff, commaspace);
+    }
+    if (millis > 0)
+    {
+        //convert the number to a string
+        sprintf(num_buffer, "%.0f", millis);
+        //add it to the buffer
+        strcat(buff, num_buffer);
+        //and add its suffix
+        strcat(buff, millis_suffix);
     }
 
     //return the buffer
