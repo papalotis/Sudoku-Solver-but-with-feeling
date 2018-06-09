@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <limits.h>
 #include "sudoku.h"
 #include "file.h"
 #include "utils.h"
@@ -32,6 +33,7 @@ char *sud4 = "000000003090106740704300690500012004000000000400860007043001802067
 
 char filename[40] = "hardest_sudokus.txt";
 int print = 1;
+int num_sudokus = INT_MAX;
 
 void handle_args(int argc, char *argv[])
 {
@@ -39,6 +41,7 @@ void handle_args(int argc, char *argv[])
     char *file_flag = "-f";
     char *no_print = "--noprint";
     char *no_print_abr = "-np";
+    char *num_suds = "-n";
 
     for (int i = 1; i < argc; i++)
     {
@@ -58,6 +61,13 @@ void handle_args(int argc, char *argv[])
         {
             print = 0;
         }
+        if (strequals(arg, num_suds))
+        {
+            //we need to look at the next arguments
+            i++;
+            //get the value and convert it to a number
+            num_sudokus = atoi(argv[i]);
+        }
     }
 }
 
@@ -65,13 +75,19 @@ int main(int argc, char *argv[])
 {
 
     handle_args(argc, argv);
-
     //the maximum amount of sudokus we want to read from a file
-    int num_sudokus = get_number_of_lines_in_file(filename);
+    num_sudokus = min(get_number_of_lines_in_file(filename), num_sudokus);
     char **sud_str_array = create_sudoku_string_array_from_file(filename, num_sudokus);
 
     int solved = 0;
     int not_solved = 0;
+
+    int *stepsForEach = (int *)malloc(num_sudokus * sizeof(int));
+    int *emptyAtStartForEach = (int *)malloc(num_sudokus * sizeof(int));
+    float *timeForEach = (float *)malloc(num_sudokus * sizeof(float));
+    memset(stepsForEach, 0, num_sudokus);
+    memset(emptyAtStartForEach, 0, num_sudokus);
+    memset(timeForEach, 0, num_sudokus);
 
     float timeWeStartGoingThoughThePuzzle = getTime();
 
@@ -89,6 +105,8 @@ int main(int argc, char *argv[])
             sudoku_print(s);
         }
 
+        emptyAtStartForEach[i] = sudoku_get_empty_indeces(s, NULL);
+
         //mark the time at which the function starts running
         float thisStartTime = getTime();
 
@@ -99,6 +117,10 @@ int main(int argc, char *argv[])
         float thisEndTime = getTime();
         //calculate the difference in time
         float elapsed = thisEndTime - thisStartTime;
+
+        stepsForEach[i] = steps;
+        timeForEach[i] = elapsed;
+
         //print how much time went by
         if (print)
         {
@@ -129,15 +151,26 @@ int main(int argc, char *argv[])
         free_sudoku(s);
     }
 
+    qsort(stepsForEach, num_sudokus, sizeof(int), compare_int);
+    qsort(emptyAtStartForEach, num_sudokus, sizeof(int), compare_int);
+    qsort(timeForEach, num_sudokus, sizeof(int), compare_float);
+
     float timeWeFinishGoingThoughThePuzzle = getTime();
     float totalTime = timeWeFinishGoingThoughThePuzzle - timeWeStartGoingThoughThePuzzle;
-    if (print || 1)
-    {
-        printf("Attempted to solve %d sudokus\n", solved + not_solved);
-        printf("For %d of them a solution was found\n", solved);
-        printf("%.2f%% of the sudokus were solved\n", 100 * (float)solved / (solved + not_solved));
-        printf("Total time: %.2f seconds\n", totalTime);
-    }
+
+    char timeBuff[40];
+
+    printf("Attempted to solve %d sudokus\n", solved + not_solved);
+    printf("For %d of them a solution was found\n", solved);
+    printf("%.2f%% of the sudokus were solved\n", 100 * (float)solved / (solved + not_solved));
+    printf("Median steps until solution %d\n", stepsForEach[num_sudokus / 2]);
+    printf("Median empty cells at start %d\n", emptyAtStartForEach[num_sudokus / 2]);
+    printf("Median time for solution %.4fs\n", timeForEach[num_sudokus / 2]);
+
+    printf("Total time: %s\n", format_time_seconds(totalTime, timeBuff, 40));
 
     free_sudoku_string_array(sud_str_array, num_sudokus);
+    free(stepsForEach);
+    free(emptyAtStartForEach);
+    free(timeForEach);
 }
