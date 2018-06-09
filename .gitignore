@@ -5,4 +5,5 @@ prog
 .vscode
 sudoku.csv
 output.txt
+log*
 
