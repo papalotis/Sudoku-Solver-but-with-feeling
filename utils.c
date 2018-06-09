@@ -47,3 +47,46 @@ int strequals(char *s1, char *s2)
 {
     return strcmp(s1, s2) == 0;
 }
+
+int compare_int(const void *a, const void *b)
+{
+    return (*(int *)a - *(int *)b);
+}
+
+int compare_float(const void *a, const void *b)
+{
+    return (*(float *)a - *(float *)b);
+}
+
+char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
+{
+    memset(buff, 0, buff_size);
+
+    char *minutes_suffix = " minutes";
+    char *seconds_suffix = " seconds";
+    char *commaspace = ", ";
+    char num_buffer[20];
+
+    float minutes = floor(timeSeconds / 60.0f);
+    float seconds = timeSeconds - minutes * 60.0f;
+    if (minutes > 0)
+    {
+        sprintf(num_buffer, "%.0f", minutes);
+        strcat(buff, num_buffer);
+        strcat(buff, minutes_suffix);
+    }
+
+    if (minutes > 0 && seconds > 0)
+    {
+        strcat(buff, commaspace);
+    }
+
+    if (seconds > 0)
+    {
+        sprintf(num_buffer, "%.2f", seconds);
+        strcat(buff, num_buffer);
+        strcat(buff, seconds_suffix);
+    }
+
+    return buff;
+}
