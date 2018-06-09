@@ -2,20 +2,20 @@
 #include <math.h>
 #include <stdio.h>
 
-/*
-A cell instance represents a sudoku cell. Each cell has a value which is the
-"filled in" value of the cell. The index represents the cell's position in the
-sudoku. It can range from 0 to 80. The neighbors array contains the indeces of
-cells to which the cell is adjecent (there must exist no two cells that are
-adjecent and have the same value). The pencilmakrs stack represents the values
-that when filled in the sudoku would still be valid.
-*/
+/**
+ * A cell instance represents a sudoku cell. Each cell has a value which is the
+ * "filled in" value of the cell. The index represents the cell's position in the
+ * sudoku. It can range from 0 to 80. The neighbors array contains the indeces of
+ * cells to which the cell is adjecent (there must exist no two cells that are
+ * adjecent and have the same value). The pencilmakrs stack represents the values
+ * that when filled in the sudoku would still be valid.
+ */
 
 /*
-This function creates/returns an "empty" cell instance. It had an empty value
-and no position in the puzzle. It allocates the appropriate memory for the
-neighbors array and the pencilmakrs stack.
-*/
+ * This function creates/returns an "empty" cell instance. It has an empty value
+ * and no position in the puzzle. It allocates the appropriate memory for the
+ * neighbors array and the pencilmakrs stack.
+ */
 Cell *create_cell()
 {
     Cell *c = (Cell *)malloc(sizeof(Cell));
@@ -30,10 +30,10 @@ Cell *create_cell()
 }
 
 /*
-This function frees a cell instance from memory. First it frees the allocated
-memory for the neighbors array and the pencilmakrs stack and then frees the
-space used by itself.
-*/
+ * This function frees a cell instance from memory. First it frees the allocated
+ * memory for the neighbors array and the pencilmakrs stack and then frees the
+ * space used by itself.
+ */
 void free_cell(Cell *c)
 {
     free(c->neighbors);
@@ -42,11 +42,11 @@ void free_cell(Cell *c)
 }
 
 /*
-This function creates a sudoku cell with a specific value and position. First
-it allocates the necessary memory to create a generic cell and then applies the
-specific values. After that it also calculates the indeces of the cells to which
-this cell is adjecent.
-*/
+ * This function creates a sudoku cell with a specific value and position. First
+ * it allocates the necessary memory to create a generic cell and then applies the
+ * specific values. After that it also calculates the indeces of the cells to which
+ * this cell is adjecent.
+ */
 Cell *add_cell(int val, int index)
 {
     Cell *c = create_cell();
@@ -57,17 +57,17 @@ Cell *add_cell(int val, int index)
 }
 
 /*
-This function gets the x component of the position of a cell on the 2d grid grid
-that represents the sudoku puzzle.
-*/
+ * This function gets the x component of the position of a cell on the 2d grid grid
+ * that represents the sudoku puzzle.
+ */
 int cell_calculate_x(Cell *c)
 {
     return c->index % 9;
 }
 
 /*
-This function gets the y component of the position of a cell on the 2d grid grid
-that represents the sudoku puzzle.
+ * This function gets the y component of the position of a cell on the 2d grid grid
+ * that represents the sudoku puzzle.
 */
 int cell_calculate_y(Cell *c)
 {
@@ -75,10 +75,10 @@ int cell_calculate_y(Cell *c)
 }
 
 /*
-This function uses the fact that x + y * width is injective. It finds
-to which box a cell belongs using the x,y components of its 2d position and
-maps that pair to a 1d value. That is used to identify each 3x3 box on the grid
-*/
+ * This function uses the fact that x + y * width is injective. It finds
+ * to which box a cell belongs using the x,y components of its 2d position and
+ * maps that pair to a 1d value. That is used to identify each 3x3 box on the grid
+ */
 int cell_calculate_box(Cell *c)
 {
     //dividing by 3 and then multiplying by 3 is redundant
@@ -91,17 +91,21 @@ int cell_calculate_box(Cell *c)
     return bx + by * 3;
 }
 
+/**
+ * This function returns true when a cell is filled in or not
+ */
 int cell_is_empty(Cell *c)
 {
     return c->value == 0;
 }
 
 /*
-This function calculates the indeces of the cells to which a cell is adjecent.
-Two cells are adjecent if any of their x,y,box components are equal. Also no
-cell is adjecent to itself. Each cell should have 20 neighbors. It is to be
-called only once when the cell is initialized.
-*/
+ * This function calculates the indeces of the cells to which a cell is adjecent.
+ * Two cells are adjecent if any of their x,y,box components are equal. Also no
+ * cell is adjecent to itself. Each cell should have 20 neighbors. This function 
+ * should only be called once when the cell is initialized called only once 
+ * when the cell is initialized.
+ */
 void cell_calculate_neighbor_indeces(Cell *c)
 {
     //calculate the x,y,box of the cell
@@ -119,7 +123,7 @@ void cell_calculate_neighbor_indeces(Cell *c)
     //loop over all possible indeces
     for (int i = 0; i < 81; i++)
     {
-        //set the index of the token cell to the one we workd with now
+        //set the index of the token cell to the one we work with now
         other->index = i;
 
         //a cell should not be adjecent to itself
@@ -147,26 +151,23 @@ void cell_calculate_neighbor_indeces(Cell *c)
 }
 
 /*
-This function calculates the pencilmakrs of a cell. Then pencilmakrs of a cell
-are affected by the values of its neighbors. A value between [1,...,9] should be
-in the pencilmakrs stack iff there exists no neighbor such that it has that value
-as a its own value.
-*/
+ * This function calculates the pencilmakrs of a cell. Then pencilmakrs of a cell
+ * are affected by the values of its neighbors. A value between [1,...,9] should be
+ * in the pencilmakrs stack iff there exists no neighbor such that it has that value
+ * as a its own value.
+ */
 void cell_calculate_pencilmarks(Cell *c, Cell **sud)
 {
     //if the cell is not empty we don't bother with calculating the pencilmakrs
     //at all
     if (c->value != 0)
-    {
         return;
-    }
 
     //remove any values that are already in the pencilmakrs stack
     stack_clear(c->pencilmakrs);
     //for each value in [1,...,9]
     for (int val = 1; val <= 9; val++)
     {
-        // for (int val = 9; val >= 1; val--) {
         //assume the value will go in the pencilmakrs stack
         int still_valid = 1;
 
@@ -201,11 +202,11 @@ void cell_calculate_pencilmarks(Cell *c, Cell **sud)
 }
 
 /*
-This function finds whether an empty cell has a unique pencilmark
-compared to all the other empty cells of one of its houses (row, column, box)
-It receives a cell as input, as well as the cell array that defines the sudoku
-and a list of indeces that are in the same row, column or box as this cell.
-*/
+ * This function finds whether an empty cell has a unique pencilmark
+ * compared to all the other empty cells of one of its houses (row, column, box)
+ * It receives a cell as input, as well as the cell array that defines the sudoku
+ * and a list of indeces that are in the same row, column or box as this cell.
+ */
 int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces)
 {
     //if the cell has at most one pencilmark, then obviously we don't need
@@ -246,7 +247,7 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces)
             break;
     }
     //if in the end the cloned stack has exactly one value
-    //that means that this cell, has a unique pencilmark in this houses
+    //that means that this cell, has a unique pencilmark in this house
     if (stack_get_size(clone) == 1)
     {
         //remove all the elements from the pencilmarks stack of that cell
@@ -263,10 +264,10 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces)
 }
 
 /*
-This function finds whether two cells of the same house have the exact same
-two pencilmarks. If that's the case then these two values can be removed from
-all the other cells of that house
-*/
+ * This function finds whether two cells of the same house have the exact same
+ * two pencilmarks. If that's the case then these two values can be removed from
+ * all the other cells of that house
+ */
 void cell_find_naked_pairs(Cell *c, Cell **sud, int *indeces)
 {
     //we only care about cells that don't have a value

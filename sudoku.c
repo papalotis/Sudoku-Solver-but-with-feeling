@@ -6,20 +6,20 @@
 #define NO_VALID_POS -1
 
 /*
-A sudoku instance represents a sudoku puzzle at a specific state. It contains a
-sudoku cell array (nodes) that represents all the cells that a sudoku is comprised of.
-It has an indeces stack that is used to hold the backtracking path in which we
-are. In has a size that represents the size of the sudoku puzzle.
-nextIndex represents the index of the cell that is at the end of the backtracking
-path. rows, columns and boxes are 2d arrays that contain the indeces of the cells
-that belong to each row, column or box
+* A sudoku instance represents a sudoku puzzle at a specific state. It contains a
+* sudoku cell array (nodes) that represents all the cells that a sudoku is comprised of.
+* It has an indeces stack that is used to hold the backtracking path in which we
+* are. In has a size that represents the size of the sudoku puzzle.
+* nextIndex represents the index of the cell that is at the end of the backtracking
+* path. rows, columns and boxes are 2d arrays that contain the indeces of the cells
+* that belong to each row, column or box
 */
 
-/*
-This function creates an empty sudoku puzzle. It sets the size to 81 (as in a
-9x9 grid). It allocates the necessary memory for the nodes array and the indeces
-stack, and sets nextIndex to the appropriate value
-*/
+/**
+ * This function creates an empty sudoku puzzle. It sets the size to 81 (as in a
+ * 9x9 grid). It allocates the necessary memory for the nodes array, the indeces
+ * stack and the rows, cols, boxes arrays and sets nextIndex to the appropriate value
+ */
 Sudoku *create_sudoku()
 {
     //memory for sudoku object itself
@@ -29,6 +29,7 @@ Sudoku *create_sudoku()
     s->nodes = (Cell **)malloc(sizeof(Cell *) * s->size);
     //empty stack
     s->indeces = create_stack();
+    //we haven't started solving
     s->nextIndex = INDEX_UNINITIALIZED;
 
     //allocate memory for 3 2d arrays
@@ -45,29 +46,39 @@ Sudoku *create_sudoku()
 }
 
 /*
-This function frees a sudoku instance from memory. First it frees the memory used
-by each cell that defines the sudoku puzzle. Then it frees the nodes array and
-the indeces stack. It frees the 3 2d arrays and lastly it frees the memory used by itself
-*/
+ * This function frees a sudoku instance from memory. First it frees the memory used
+ * by each cell that defines the sudoku puzzle. Then it frees the nodes array and
+ * the indeces stack. It frees the 3 2d arrays and lastly it frees the memory used by itself
+ */
 void free_sudoku(Sudoku *s)
 {
+    //for every cell
     for (int i = 0; i < s->size; i++)
     {
+        //free the cell
         free_cell(s->nodes[i]);
     }
+    //free the array of the cells
     free(s->nodes);
+
+    //free the indeces stack
     free_stack(s->indeces);
 
+    //for every row in the
+    //three 2d arrays
     for (int i = 0; i < 9; i++)
     {
+        //free the rows of the 2d arrays
         free(s->rows[i]);
         free(s->columns[i]);
         free(s->boxes[i]);
     }
+    //free the 2d arrays themselves
     free(s->rows);
     free(s->columns);
     free(s->boxes);
 
+    //free the memory used by the sudoku itself
     free(s);
 }
 
@@ -232,11 +243,11 @@ Sudoku *sudoku_create_from_int(int *data)
         //add it to the nodes array
         s->nodes[i] = add_cell(data[i], i);
     }
-    //
+    //calculate the rows collumns and boxes 2d arrays
     sudoku_fill_rows_columns_boxes_arrays(s);
 
     //calculate the pencilmakrs of all the nodes of the new sudoku
-    sudoku_calculate_pencilmarks(s);
+    sudoku_do_pencilmarks(s);
     //initialize the nextIndex value
     s->nextIndex = sudoku_find_next_index(s);
 
@@ -276,8 +287,10 @@ int sudoku_solve_step(Sudoku *s)
     //the value that will be returned
     //assume we will keep on solving
     int r = SUDOKU_UNDECIDED;
+    //if there is no valid position to be filled
     if (s->nextIndex == NO_VALID_POS)
     {
+        //then the sudoku is solved
         r = SUDOKU_SOLVED;
     }
     else
@@ -301,8 +314,11 @@ int sudoku_solve_step(Sudoku *s)
             {
                 s->nextIndex = stack_pop(s->indeces);
             }
+
             else
             {
+                //if we want to pop from the indeces stack but it is empty
+                //that means that the sudoku has no solution
                 r = SUDOKU_NO_SOLUTUION;
             }
         }
@@ -314,25 +330,24 @@ int sudoku_solve_step(Sudoku *s)
             //we move downwards in the backtracking tree
             stack_push(s->indeces, s->nextIndex);
 
+            //calculate the pencilmarks again
+            sudoku_do_pencilmarks(s);
             //calculate the index of the next cell that we will try to fill in
             s->nextIndex = sudoku_find_next_index(s);
-            sudoku_do_pencilmarks(s);
         }
     }
+
+    //return the result of this iteration
     return r;
 }
 
 /*
-This function runs the sudoku solving algorithm up until the sudoku is solved
-*/
+ * This function runs the sudoku solving algorithm up until the sudoku is solved
+ */
 int sudoku_solve(Sudoku *s, int *result, int *steps)
 {
     //assume that we will need to run at least one more step
     int r = SUDOKU_UNDECIDED;
-
-    //in order to get to the solved instance of the puzzle we must
-    //fill this many cells
-    // int empty = sudoku_get_empty_indeces(s, NULL);
 
     //while the sudoku is not solved or it has NOT been determined that
     //there is no solution
@@ -345,13 +360,18 @@ int sudoku_solve(Sudoku *s, int *result, int *steps)
         counter++;
     }
 
-    //return whether the sudoku was solved or has no solution
+    //fill in the values for the result and steps variables
     *result = r;
     *steps = counter - 1;
 
+    //return whether the sudoku was solved or has no solution
     return r;
 }
 
+/**
+ * This function runs all the pencilmarks algorithms 
+ * on the sudoku
+ */
 int sudoku_do_pencilmarks(Sudoku *s)
 {
     //and calculate the pencilmakrs of the sudoku
@@ -365,10 +385,10 @@ int sudoku_do_pencilmarks(Sudoku *s)
 }
 
 /*
-This function determines the index of the cell that we will run the
-algorithm next on. The decision is made based on the size of the pencilmakrs
-stack of each cell. The index of the cell that we want to return is the cell with
-the smallest pencilmakrs stack.
+ * This function determines the index of the cell that we will run the
+ * algorithm next on. The decision is made based on the size of the pencilmakrs
+ * stack of each cell. The index of the cell that we want to return is the cell with
+ * the smallest pencilmakrs stack.
 */
 int sudoku_find_next_index(Sudoku *s)
 {
@@ -383,6 +403,7 @@ int sudoku_find_next_index(Sudoku *s)
         //ignore cells that are already filled in
         if (c->value != 0)
             continue;
+
         //if the best yet is non existent or the stack of the cell that
         //we currently observe is smaller than the current best
         if (best == NULL ||
@@ -406,21 +427,23 @@ int sudoku_find_next_index(Sudoku *s)
 }
 
 /*
-This function calculates the pencilmakrs of each cell of the sudoku instance
-*/
+ * This function calculates the pencilmakrs of each cell of the sudoku instance
+ */
 void sudoku_calculate_pencilmarks(Sudoku *s)
 {
+    //for every cell
     for (int i = 0; i < s->size; i++)
     {
         Cell *c = s->nodes[i];
+        //let the cell calculate its pencilmarks
         cell_calculate_pencilmarks(c, s->nodes);
     }
 }
 
 /*
-This function finds hidden signles.
-https://www.learn-sudoku.com/hidden-singles.html
-*/
+ * This function finds hidden signles.
+ * https://www.learn-sudoku.com/hidden-singles.html
+ */
 void sudoku_eliminate_pencilmakrs(Sudoku *s)
 {
     //for every cell
@@ -428,6 +451,8 @@ void sudoku_eliminate_pencilmakrs(Sudoku *s)
     {
         Cell *c = s->nodes[i];
 
+        //we only want to change the
+        //cells pencilmarks if it is empty
         if (c->value != 0)
             continue;
 
@@ -446,9 +471,9 @@ void sudoku_eliminate_pencilmakrs(Sudoku *s)
 }
 
 /*
-This function finds naked pairs
-https://www.learn-sudoku.com/naked-pairs.html
-*/
+ * This function finds naked pairs
+ * https://www.learn-sudoku.com/naked-pairs.html
+ */
 void sudoku_find_naked_pencilmarks_pairs(Sudoku *s)
 {
     //for every cell
@@ -464,45 +489,6 @@ void sudoku_find_naked_pencilmarks_pairs(Sudoku *s)
         cell_find_naked_pairs(c, s->nodes, s->boxes[cb]);
     }
 }
-
-void box_get_value_indeces(Sudoku *s, int *indeces, stack **app)
-{
-    //for every possible value
-    for (int i = 1; i <= 9; i++)
-    {
-        //for every cell in the box
-        for (int j = 0; j < 9; j++)
-        {
-
-            Cell *c = s->nodes[indeces[j]];
-            //ignore filled in cells
-            if (c->value != 0)
-                continue;
-
-            if (stack_contains(c->pencilmakrs, i))
-            {
-                stack_push(app[i], c->index);
-            }
-        }
-    }
-}
-
-// void sudoku_apply_omission(Sudoku* s) {
-//     stack* val_appearances[10];
-//     //create 9 stacks
-//     for (int i = 1; i <= 9; i++) {
-//         val_appearances[i] = create_stack();
-//     }
-//     //for every box
-//     for (int i = 0; i < 9; i++) {
-//         for (int i = 1; i <= 9; i++) {
-//             stack_clear(val_appearances[i]);
-//         }
-//         int* box_indeces = s->boxes[i];
-//         box_get_value_indeces(s, box_indeces, val_appearances);
-//
-//     }
-// }
 
 /*
 This function calculates the indeces of all the houses of a
@@ -579,8 +565,8 @@ int sudoku_get_empty_indeces(Sudoku *s, int *buf)
 }
 
 /*
-This function returns false if two non-empty adjecent nodes have the same value
-Otherwise true
+ * This function returns false if two non-empty adjecent nodes have the same value
+ * Otherwise true
 */
 int sudoku_is_valid(Sudoku *s)
 {
@@ -611,9 +597,9 @@ int sudoku_is_valid(Sudoku *s)
 }
 
 /*
-A sudoku is solved when it's valid and there exists no cell that can still be
-filled in
-*/
+ * A sudoku is solved when it's valid and there exists no cell that can still be
+ * filled in
+ */
 int sudoku_is_solved(Sudoku *s)
 {
     return sudoku_is_valid(s) && (sudoku_find_next_index(s) == NO_VALID_POS);
