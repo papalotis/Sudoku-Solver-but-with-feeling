@@ -19,6 +19,11 @@ int num_sudokus = INT_MAX;
 //for solving this puzzle
 int with_pencilmarks = 1;
 
+//whether we should log the steps and
+//time for each solution
+int log_stats = 0;
+char log_filename[100] = "logs.txt";
+
 #pragma region arguments
 /**
  * This function handles the command line arguments
@@ -33,6 +38,7 @@ void handle_args(int argc, char *argv[])
     char *num_suds = "-n";
     char *pencilmarks = "-pencilmarks";
     char *pencilmarks_abr = "-p";
+    char *log_time_and_steps = "-log";
 
     //the zero'th argument is the program
     //itself, so start from the first arguemnt
@@ -80,6 +86,23 @@ void handle_args(int argc, char *argv[])
             //and store it in the global variable
             with_pencilmarks = atoi(argv[i]);
         }
+
+        if (strequals(arg, log_time_and_steps))
+        {
+            //set the global variable so that we log the stats
+            log_stats = 1;
+            //if there is another argument
+            if (i + 1 < argc)
+            {
+                //and it is not an identifier
+                if (argv[i + 1][0] != '-')
+                {
+                    //this means that the next argument is the name
+                    //of the log file
+                    strcpy(log_filename, argv[++i]);
+                }
+            }
+        }
     }
 }
 
@@ -92,6 +115,12 @@ int main(int argc, char *argv[])
 {
     //handle the arguments and set the global variables
     handle_args(argc, argv);
+
+    FILE *log_file = NULL;
+    if (log_stats)
+    {
+        log_file = fopen(log_filename, "w");
+    }
 
     //the maximum amount of sudokus we want to read from a file
     //is the smallest number between the number of sudokus in the file
@@ -161,6 +190,11 @@ int main(int argc, char *argv[])
         stepsForEach[i] = steps;
         timeForEach[i] = elapsed;
 
+        if (log_file != NULL)
+        {
+            fprintf(log_file, "%d %f %d\n", steps, elapsed, emptyAtStartForEach[i]);
+        }
+
         avgTime += elapsed;
         avgSteps += steps;
 
@@ -193,6 +227,11 @@ int main(int argc, char *argv[])
 
         //free the sudoku we created
         free_sudoku(s);
+    }
+
+    if (log_file != NULL)
+    {
+        fclose(log_file);
     }
 
     avgSteps /= num_sudokus;
