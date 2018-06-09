@@ -15,6 +15,11 @@ int print = 1;
 //how many sudokus we will solve
 int num_sudokus = INT_MAX;
 
+//whether we are going to use pencilmarks
+//for solving this puzzle
+int with_pencilmarks = 1;
+
+#pragma region arguments
 /**
  * This function handles the command line arguments
  * and sets the global variables appropriatelly
@@ -26,6 +31,8 @@ void handle_args(int argc, char *argv[])
     char *no_print = "--noprint";
     char *no_print_abr = "-np";
     char *num_suds = "-n";
+    char *pencilmarks = "-pencilmarks";
+    char *pencilmarks_abr = "-p";
 
     //the zero'th argument is the program
     //itself, so start from the first arguemnt
@@ -63,8 +70,20 @@ void handle_args(int argc, char *argv[])
             //and store it in the global variable
             num_sudokus = atoi(argv[i]);
         }
+
+        if (strequals(arg, pencilmarks) || strequals(arg, pencilmarks_abr))
+        {
+            //we need to look at the next arguments
+            //because that will tell us the actual number
+            i++;
+            //get the value and convert it to a number
+            //and store it in the global variable
+            with_pencilmarks = atoi(argv[i]);
+        }
     }
 }
+
+#pragma endregion
 
 /**
  * The entry point of the program
@@ -109,7 +128,7 @@ int main(int argc, char *argv[])
         char *sud_to_solve = sud_str_array[i];
 
         //create a sudoku intance from the given array
-        Sudoku *s = sudoku_create_from_char(sud_to_solve);
+        Sudoku *s = sudoku_create_from_char(sud_to_solve, with_pencilmarks);
 
         if (print) //print the unsolved puzzle if the user wants us to
             sudoku_print(s);

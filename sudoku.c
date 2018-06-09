@@ -31,6 +31,7 @@ Sudoku *create_sudoku()
     s->indeces = create_stack();
     //we haven't started solving
     s->nextIndex = INDEX_UNINITIALIZED;
+    s->with_pencilmarks = 1;
 
     //allocate memory for 3 2d arrays
     s->rows = (int **)malloc(sizeof(int *) * 9);
@@ -81,6 +82,14 @@ void free_sudoku(Sudoku *s)
     //free the memory used by the sudoku itself
     free(s);
 }
+
+int sudoku_set_with_pencilmarks(Sudoku *s, int dp)
+{
+    s->with_pencilmarks = dp;
+    return s->with_pencilmarks;
+}
+
+#pragma region printing
 
 /** This function converts a sudoku to a string. It receives a sudoku
  * and an optional string buffer as input and returns a string buffer
@@ -229,13 +238,17 @@ void sudoku_print(Sudoku *s)
     free(sud_str);
 }
 
+#pragma endregion
+
 /**
  * This function creates a sudoku puzzle and fills it in with the given data
  */
-Sudoku *sudoku_create_from_int(int *data)
+Sudoku *sudoku_create_from_int(int *data, int with_pencilmarks)
 {
     //crete an empty sudoku instance
     Sudoku *s = create_sudoku();
+    sudoku_set_with_pencilmarks(s, with_pencilmarks);
+
     //for each value in the data
     for (int i = 0; i < s->size; i++)
     {
@@ -246,8 +259,10 @@ Sudoku *sudoku_create_from_int(int *data)
     //calculate the rows collumns and boxes 2d arrays
     sudoku_fill_rows_columns_boxes_arrays(s);
 
-    //calculate the pencilmakrs of all the nodes of the new sudoku
+    // calculate the pencilmakrs of all the nodes of the new sudoku
+
     sudoku_do_pencilmarks(s);
+
     //initialize the nextIndex value
     s->nextIndex = sudoku_find_next_index(s);
 
@@ -260,7 +275,7 @@ Sudoku *sudoku_create_from_int(int *data)
  * string to an integer array and then returning the result of the
  * sudoku_create_from_int function
  */
-Sudoku *sudoku_create_from_char(char *data)
+Sudoku *sudoku_create_from_char(char *data, int with_pencilmarks)
 {
     //the int array
     int data_int[81];
@@ -275,7 +290,7 @@ Sudoku *sudoku_create_from_char(char *data)
         data_int[i] = n;
     }
     //create the sudoku using the sudoku_create_from_int function
-    Sudoku *s = sudoku_create_from_int(data_int);
+    Sudoku *s = sudoku_create_from_int(data_int, with_pencilmarks);
     return s;
 }
 
@@ -306,7 +321,7 @@ int sudoku_solve_step(Sudoku *s)
         c->value = val > 0 ? val : 0;
 
         //if there is no value so that the sudoku is still valid
-        if (c->value == 0)
+        if (cell_is_empty(c))
         {
             //pop the last value from the indeces stack
             //we move upwards in the backtracking tree
@@ -330,8 +345,10 @@ int sudoku_solve_step(Sudoku *s)
             //we move downwards in the backtracking tree
             stack_push(s->indeces, s->nextIndex);
 
-            //calculate the pencilmarks again
+            //calculate the pencilmarks again but only we are specified to
+
             sudoku_do_pencilmarks(s);
+
             //calculate the index of the next cell that we will try to fill in
             s->nextIndex = sudoku_find_next_index(s);
         }
@@ -374,12 +391,38 @@ int sudoku_solve(Sudoku *s, int *result, int *steps)
  */
 int sudoku_do_pencilmarks(Sudoku *s)
 {
-    //and calculate the pencilmakrs of the sudoku
-    sudoku_calculate_pencilmarks(s);
-    //find hidden singles
-    sudoku_eliminate_pencilmakrs(s);
-    // //find naked pairs
-    sudoku_find_naked_pencilmarks_pairs(s);
+    if (s->with_pencilmarks)
+    {
+        //and calculate the pencilmakrs of the sudoku
+        sudoku_calculate_pencilmarks(s);
+        //find hidden singles
+        sudoku_eliminate_pencilmakrs(s);
+        //find naked pairs
+        sudoku_find_naked_pencilmarks_pairs(s);
+    }
+    else
+    {
+        sudoku_fill_pencilmakrs_with_dumb_values(s);
+    }
+
+    return 1;
+}
+
+int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
+{
+    for (int i = 0; i < s->size; i++)
+    {
+        Cell *c = s->nodes[i];
+        if (cell_is_empty(c))
+        {
+            stack_clear(c->pencilmakrs);
+            for (int val = 1; val <= 9; val++)
+            {
+
+                stack_push(s->nodes[i]->pencilmakrs, val);
+            }
+        }
+    }
 
     return 1;
 }
@@ -575,7 +618,7 @@ int sudoku_is_valid(Sudoku *s)
     {
         Cell *c = s->nodes[i];
         //if the cell is empty ignore it
-        if (c->value == 0)
+        if (cell_is_empty(c))
             continue;
 
         //for every neighbor index of the cell

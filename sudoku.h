@@ -18,18 +18,22 @@ typedef struct _Sudoku
     int **rows;
     int **columns;
     int **boxes;
+
+    int with_pencilmarks;
 } Sudoku;
 
 Sudoku *create_sudoku();
 void free_sudoku(Sudoku *s);
+int sudoku_set_with_pencilmarks(Sudoku *s, int dp);
 char *sudoku_to_string_simple(Sudoku *s, char *buff);
 char *sudoku_to_string_fancy(Sudoku *s, char *buff);
 void sudoku_print(Sudoku *s);
-Sudoku *sudoku_create_from_int(int *data);
-Sudoku *sudoku_create_from_char(char *data);
+Sudoku *sudoku_create_from_int(int *data, int with_pencilmarks);
+Sudoku *sudoku_create_from_char(char *data, int with_pencilmarks);
 int sudoku_solve_step(Sudoku *s);
 int sudoku_solve(Sudoku *s, int *result, int *steps);
 int sudoku_do_pencilmarks(Sudoku *s);
+int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s);
 int sudoku_find_next_index(Sudoku *s);
 void sudoku_calculate_pencilmarks(Sudoku *s);
 void sudoku_eliminate_pencilmakrs(Sudoku *s);
