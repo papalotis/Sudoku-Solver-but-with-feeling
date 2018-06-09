@@ -22,7 +22,7 @@ int with_pencilmarks = 1;
 //whether we should log the steps and
 //time for each solution
 int log_stats = 0;
-char log_filename[100] = "logs.txt";
+char log_filename[40] = "logs/logs.txt";
 
 #pragma region arguments
 /**
@@ -38,7 +38,8 @@ void handle_args(int argc, char *argv[])
     char *num_suds = "-n";
     char *pencilmarks = "-pencilmarks";
     char *pencilmarks_abr = "-p";
-    char *log_time_and_steps = "-log";
+    char *log_arg = "-log";
+    char *logs_dir = "logs/";
 
     //the zero'th argument is the program
     //itself, so start from the first arguemnt
@@ -87,7 +88,7 @@ void handle_args(int argc, char *argv[])
             with_pencilmarks = atoi(argv[i]);
         }
 
-        if (strequals(arg, log_time_and_steps))
+        if (strequals(arg, log_arg))
         {
             //set the global variable so that we log the stats
             log_stats = 1;
@@ -99,7 +100,8 @@ void handle_args(int argc, char *argv[])
                 {
                     //this means that the next argument is the name
                     //of the log file
-                    strcpy(log_filename, argv[++i]);
+                    strcpy(log_filename, logs_dir);
+                    strcat(log_filename, argv[++i]);
                 }
             }
         }
@@ -115,19 +117,19 @@ int main(int argc, char *argv[])
 {
     //handle the arguments and set the global variables
     handle_args(argc, argv);
-
-    FILE *log_file = NULL;
-    if (log_stats)
-    {
-        log_file = fopen(log_filename, "w");
-    }
-
     //the maximum amount of sudokus we want to read from a file
     //is the smallest number between the number of sudokus in the file
     //and the number specified by the user
     num_sudokus = min(get_number_of_lines_in_file(filename), num_sudokus);
     //create the string array and load the sudokus
     char **sud_str_array = create_sudoku_string_array_from_file(filename, num_sudokus);
+
+    FILE *log_file = NULL;
+    if (log_stats)
+    {
+        log_file = fopen(log_filename, "w");
+        fprintf(log_file, "%s, n: %d, pencilmarks: %s\n", filename, num_sudokus, (with_pencilmarks) ? "true" : "false");
+    }
 
     //the number of sudokus that we solved
     int solved = 0;

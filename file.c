@@ -76,6 +76,7 @@ int get_number_of_lines_in_file(char *filename)
     //if we succeed
     if (fp != NULL)
     {
+        // printf("%s\n", "hi");
         //if a file exists then it has at least one line
         lines = 1;
         char c;
