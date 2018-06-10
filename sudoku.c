@@ -1,5 +1,4 @@
-#include <string.h>
-#include <stdio.h>
+
 #include "sudoku.h"
 
 #define INDEX_UNINITIALIZED -2
@@ -34,6 +33,8 @@ Sudoku *create_sudoku()
     s->nextIndex = INDEX_UNINITIALIZED;
     s->with_pencilmarks = 1;
 
+    s->value_freq = (int *)malloc(sizeof(int) * 10);
+
     //allocate memory for 3 2d arrays
     s->rows = (int **)malloc(sizeof(int *) * 9);
     s->columns = (int **)malloc(sizeof(int *) * 9);
@@ -66,6 +67,8 @@ void free_sudoku(Sudoku *s)
     //free the indeces stack
     free_stack(s->indeces);
     free_stack(s->indeces_history);
+
+    free(s->value_freq);
 
     //for every row in the
     //three 2d arrays
@@ -261,6 +264,9 @@ Sudoku *sudoku_create_from_int(int *data, int with_pencilmarks)
     //calculate the rows collumns and boxes 2d arrays
     sudoku_fill_rows_columns_boxes_arrays(s);
 
+    //calculate the frequency of the filled in values
+    sudoku_calculate_value_frequency(s);
+
     // calculate the pencilmakrs of all the nodes of the new sudoku
 
     sudoku_do_pencilmarks(s);
@@ -312,16 +318,24 @@ int sudoku_solve_step(Sudoku *s)
     }
     else
     {
-        stack_push(s->indeces_history, s->nextIndex);
+        // stack_push(s->indeces_history, s->nextIndex);
 
         //get the cell that we need to find the next value
         Cell *c = s->nodes[s->nextIndex];
 
+        //get its current value
+        int old_value = c->value;
+
         //get the next value from the pencilmakrs stack of that cell
-        int val = stack_pop(c->pencilmakrs);
+        int val = cell_retrieve_next_value_from_pencilmarks(c, s->value_freq); // stack_pop(c->pencilmakrs);
         //clean up the result of the stack (if it's negative that means the stack
         //was empty)
         c->value = val > 0 ? val : 0;
+
+        s->value_freq[old_value] -= 1;
+        s->value_freq[c->value] += 1;
+
+        // array_print(s->value_freq, 10);
 
         //if there is no value so that the sudoku is still valid
         if (cell_is_empty(c))
@@ -431,6 +445,15 @@ int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
     }
 
     return 1;
+}
+
+void sudoku_calculate_value_frequency(Sudoku *s)
+{
+    for (int i = 0; i < s->size; i++)
+    {
+        Cell *c = s->nodes[i];
+        s->value_freq[c->value] += 1;
+    }
 }
 
 /*
