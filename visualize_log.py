@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 
@@ -26,7 +25,7 @@ def plot_data(xs, ys, deg=1):
 
 
 # get data from file
-filename = "logs.txt" if len(sys.argv) == 1 else sys.argv[1]
+filename = "logs/logs.txt" if len(sys.argv) == 1 else sys.argv[1]
 with open(filename) as f:
     read_data = f.read()
 
