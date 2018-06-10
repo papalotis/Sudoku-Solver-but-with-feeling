@@ -99,6 +99,44 @@ int cell_is_empty(Cell *c)
     return c->value == 0;
 }
 
+/**
+ * This function finds the pencilmark of the cell that is least frequantly 
+ * filled in the sudkoku, since it's the most likely to be correct
+ */
+int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
+{
+    //if we have no choise we can directly pop the value from the stack
+    if (stack_get_size(c->pencilmakrs) < 2)
+    {
+        return stack_pop(c->pencilmakrs);
+    }
+
+    int val = stack_peek(c->pencilmakrs);
+    //iterate over the values in the pencilmarks stack
+    elem *cur = c->pencilmakrs->sp->next;
+    //so long as there are pencilmarks to consider
+    while (cur)
+    {
+        //the pencilamark we are observing
+        int candidate_value = cur->data;
+        //if its frequency is smaller than the pencilmark
+        //we which is the best yet
+        if (value_freq[candidate_value] < value_freq[val])
+        {
+            //then this pencilmark is the best yet
+            val = candidate_value;
+        }
+
+        cur = cur->next;
+    }
+
+    //remove the value from the pencilmarks
+    stack_remove_all(c->pencilmakrs, val);
+
+    //return the pencilmark
+    return val;
+}
+
 /*
  * This function calculates the indeces of the cells to which a cell is adjecent.
  * Two cells are adjecent if any of their x,y,box components are equal. Also no
