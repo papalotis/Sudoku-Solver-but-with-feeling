@@ -34,6 +34,7 @@ Sudoku *create_sudoku()
     s->with_pencilmarks = 1;
 
     s->value_freq = (int *)malloc(sizeof(int) * 10);
+    s->empty_indeces = (int *)malloc(sizeof(int) * 81);
 
     //allocate memory for 3 2d arrays
     s->rows = (int **)malloc(sizeof(int *) * 9);
@@ -69,6 +70,7 @@ void free_sudoku(Sudoku *s)
     free_stack(s->indeces_history);
 
     free(s->value_freq);
+    free(s->empty_indeces);
 
     //for every row in the
     //three 2d arrays
@@ -327,7 +329,7 @@ int sudoku_solve_step(Sudoku *s)
         int old_value = c->value;
 
         //get the next value from the pencilmakrs stack of that cell
-        int val = cell_retrieve_next_value_from_pencilmarks(c, s->value_freq); // stack_pop(c->pencilmakrs);
+        int val = cell_retrieve_next_value_from_pencilmarks(c, s->value_freq);
         //clean up the result of the stack (if it's negative that means the stack
         //was empty)
         c->value = val > 0 ? val : 0;
@@ -335,7 +337,7 @@ int sudoku_solve_step(Sudoku *s)
         s->value_freq[old_value] -= 1;
         s->value_freq[c->value] += 1;
 
-        // array_print(s->value_freq, 10);
+        array_print(s->value_freq, 10);
 
         //if there is no value so that the sudoku is still valid
         if (cell_is_empty(c))
@@ -361,6 +363,9 @@ int sudoku_solve_step(Sudoku *s)
             //push the current index to the indeces array
             //we move downwards in the backtracking tree
             stack_push(s->indeces, s->nextIndex);
+
+            int empty_indeces[81];
+            sudoku_get_empty_indeces(s, empty_indeces);
 
             //calculate the pencilmarks again but only we are specified to
             sudoku_do_pencilmarks(s);

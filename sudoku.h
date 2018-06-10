@@ -18,6 +18,8 @@ typedef struct _Sudoku
     stack *indeces_history;
     int nextIndex;
 
+    int *empty_indeces;
+
     int *value_freq;
 
     int **rows;
