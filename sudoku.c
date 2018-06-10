@@ -349,7 +349,6 @@ int sudoku_solve_step(Sudoku *s)
             stack_push(s->indeces, s->nextIndex);
 
             //calculate the pencilmarks again but only we are specified to
-
             sudoku_do_pencilmarks(s);
 
             //calculate the index of the next cell that we will try to fill in
@@ -411,8 +410,13 @@ int sudoku_do_pencilmarks(Sudoku *s)
     return 1;
 }
 
+/**
+ * This function sets the pencilmarks of all the empty cells to 
+ * all the possible numbers in [1,..,9]
+ */
 int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
 {
+    int nums[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     for (int i = 0; i < s->size; i++)
     {
         Cell *c = s->nodes[i];
@@ -421,7 +425,6 @@ int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
             stack_clear(c->pencilmakrs);
             for (int val = 1; val <= 9; val++)
             {
-
                 stack_push(s->nodes[i]->pencilmakrs, val);
             }
         }
