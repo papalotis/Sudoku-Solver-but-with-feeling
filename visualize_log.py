@@ -18,13 +18,15 @@ def plot_data(xs, ys, deg=1):
     fig, ax = plt.subplots()
     ax.plot(xs, ys, 'o')
     ax.plot(xline, yline, "r-")
-    ax.set_title('Relationship between steps and time')
+    ax.set_title('Relationship between steps and time\n for {} and {} puzzles'.format(
+        filename, xs.shape[0]))
     plt.xlabel("Steps")
     plt.ylabel("Time (s)")
     plt.show()
 
 
 # get data from file
+global filename
 filename = "logs/logs.txt" if len(sys.argv) == 1 else sys.argv[1]
 with open(filename) as f:
     read_data = f.read()
