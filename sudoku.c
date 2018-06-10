@@ -337,15 +337,13 @@ int sudoku_solve_step(Sudoku *s)
         s->value_freq[old_value] -= 1;
         s->value_freq[c->value] += 1;
 
-        array_print(s->value_freq, 10);
-
         //if there is no value so that the sudoku is still valid
         if (cell_is_empty(c))
         {
-            //pop the last value from the indeces stack
-            //we move upwards in the backtracking tree
             if (!stack_is_empty(s->indeces))
             {
+                //pop the last value from the indeces stack
+                //we move upwards in the backtracking tree
                 s->nextIndex = stack_pop(s->indeces);
             }
 
@@ -364,10 +362,7 @@ int sudoku_solve_step(Sudoku *s)
             //we move downwards in the backtracking tree
             stack_push(s->indeces, s->nextIndex);
 
-            int empty_indeces[81];
-            sudoku_get_empty_indeces(s, empty_indeces);
-
-            //calculate the pencilmarks again but only we are specified to
+            //calculate the pencilmarks again
             sudoku_do_pencilmarks(s);
 
             //calculate the index of the next cell that we will try to fill in
@@ -414,6 +409,8 @@ int sudoku_do_pencilmarks(Sudoku *s)
 {
     if (s->with_pencilmarks)
     {
+        //get the indeces that are empty
+        sudoku_get_empty_indeces(s, s->empty_indeces);
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
         //find hidden singles
@@ -511,7 +508,14 @@ void sudoku_calculate_pencilmarks(Sudoku *s)
     //for every cell
     for (int i = 0; i < s->size; i++)
     {
-        Cell *c = s->nodes[i];
+        //get the index of the i'th empty cell
+        int index = s->empty_indeces[i];
+        //if the index is -1 that mean we have gone through all the empty cells
+        if (index < 0)
+            break;
+
+        //the cell at that index
+        Cell *c = s->nodes[index];
         //let the cell calculate its pencilmarks
         cell_calculate_pencilmarks(c, s->nodes);
     }
@@ -526,13 +530,15 @@ void sudoku_eliminate_pencilmakrs(Sudoku *s)
     //for every cell
     for (int i = 0; i < s->size; i++)
     {
-        Cell *c = s->nodes[i];
+        //the index of the i'th cell that is empty
+        int index = s->empty_indeces[i];
 
-        //we only want to change the
-        //cells pencilmarks if it is empty
-        if (c->value != 0)
-            continue;
+        //if the index is negative then we have gone through all
+        //the possible cells that are empty
+        if (index < 0)
+            break;
 
+        Cell *c = s->nodes[index];
         //get its x,y,box
         int cx = cell_calculate_x(c);
         int cy = cell_calculate_y(c);
@@ -556,7 +562,15 @@ void sudoku_find_naked_pencilmarks_pairs(Sudoku *s)
     //for every cell
     for (int i = 0; i < s->size; i++)
     {
-        Cell *c = s->nodes[i];
+        //the index of the i'th cell that is empty
+        int index = s->empty_indeces[i];
+
+        //if the index is negative then we have gone through all
+        //the possible cells that are empty
+        if (index < 0)
+            break;
+
+        Cell *c = s->nodes[index];
         int cx = cell_calculate_x(c);
         int cy = cell_calculate_y(c);
         int cb = cell_calculate_box(c);
