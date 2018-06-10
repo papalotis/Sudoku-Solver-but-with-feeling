@@ -642,6 +642,14 @@ int sudoku_get_empty_indeces(Sudoku *s, int *buf)
 */
 int sudoku_is_valid(Sudoku *s)
 {
+    //if we are using pencilmarks then there
+    //is no chance we will try a sudoku that is not valid
+    //there will be a cell with no pencilmarks
+    if (s->with_pencilmarks)
+    {
+        return 1;
+    }
+
     //for every cell
     for (int i = 0; i < s->size; i++)
     {
