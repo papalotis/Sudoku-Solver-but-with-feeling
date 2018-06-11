@@ -417,6 +417,7 @@ int sudoku_do_pencilmarks(Sudoku *s)
         sudoku_eliminate_pencilmakrs(s);
         //find naked pairs
         sudoku_find_naked_pencilmarks_pairs(s);
+        // sudoku_find_naked_pencilmarks_partners(s);
     }
     else
     {
@@ -550,6 +551,29 @@ void sudoku_eliminate_pencilmakrs(Sudoku *s)
         cell_find_unique_pencilmarks(c, s->nodes, s->columns[cx]);
         //then the box
         cell_find_unique_pencilmarks(c, s->nodes, s->boxes[cb]);
+    }
+}
+
+void sudoku_find_naked_pencilmarks_partners(Sudoku *s)
+{
+    for (int i = 0; i < s->size; i++)
+    {
+        //the index of the i'th cell that is empty
+        int index = s->empty_indeces[i];
+
+        //if the index is negative then we have gone through all
+        //the possible cells that are empty
+        if (index < 0)
+            break;
+
+        Cell *c = s->nodes[index];
+        int cx = cell_calculate_x(c);
+        int cy = cell_calculate_y(c);
+        int cb = cell_calculate_box(c);
+
+        cell_find_naked_partners(c, s->nodes, s->rows[cy]);
+        cell_find_naked_partners(c, s->nodes, s->columns[cx]);
+        cell_find_naked_partners(c, s->nodes, s->boxes[cb]);
     }
 }
 

@@ -301,6 +301,107 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
     return stack_get_size(c->pencilmakrs) == 1;
 }
 
+void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
+{
+    //if the cell is not empty then we don't want to bother with it
+    if (!cell_is_empty(c))
+        return;
+
+    //if the cell doesn't have ant ambigiouity then there is no point finding
+    //partenrs for it
+    if (stack_get_size(c->pencilmakrs) != 2)
+        return;
+
+    //if the cell has more than 3 cells, the chances that it will
+    //have another cell in the house with the same pencilmarks is
+    //very small, so cutoff from 3
+    // if (stack_get_size(c->pencilmakrs) > 3)
+    //     return;
+
+    //the cells that have the exact same pencilmarks
+    Cell *same_pencilmarks[9];
+    int num_same;
+    //the cells that are empty and don't have the exact same pencilmarks as c
+    Cell *complements[9];
+    int num_comp;
+
+    cell_get_neighbours_with_same_pencilmarks_in_house(c,                /*the cell*/
+                                                       sud,              /*the sudoku cells array*/
+                                                       house_indeces,    /*the indeces of the cells in this house*/
+                                                       same_pencilmarks, /*the buffer were the cells that have 
+                                                       the same pencilmarks as c will be put*/
+                                                       &num_same,        /*the number of cells that have the same pencilmarks will be written in this variable*/
+                                                       complements,      /*the cells that are empty and don't have the same pencilmarks as c will be put in here*/
+                                                       &num_comp);       /*the number of cells in the complements buffer*/
+
+    //if we didn't find as many valid cells as we have pencilmarks
+    //then we can't do much more
+    if (num_same != stack_get_size(c->pencilmakrs) - 1)
+        return;
+
+    //for every other cell, remove our pencilmarks from their pencilmarks
+    for (int i = 0; i < num_comp; i++)
+    {
+        Cell *to_remove_from = complements[i];
+
+        elem *cur = c->pencilmakrs->sp;
+        while (cur)
+        {
+            int val = cur->data;
+            stack_remove_all(to_remove_from->pencilmakrs, val);
+            cur = cur->next;
+        }
+    }
+}
+
+/**
+ * This function returns the number of neighbors in a house that have the exact same
+ * pencilmarks as a given cell
+ */
+void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int *house_indeces, Cell **same_buffer,
+                                                        int *same_num, Cell **comp_buffer, int *comp_num)
+{
+    int same_counter = 0;
+    int comp_counter = 0;
+
+    stack *our_pencilmarks = c->pencilmakrs;
+    stack *other_pencilmarks = NULL;
+    //for every cell in the house
+    for (int i = 0; i < 9; i++)
+    {
+
+        Cell *other = sud[house_indeces[i]];
+        //if the other cell is the same as the main one ignore it
+        if (other == c)
+            continue;
+        //if the other cell has a value in it, ignore it
+        if (!cell_is_empty(other))
+            continue;
+
+        other_pencilmarks = other->pencilmakrs;
+
+        //if the main cell and the other one have the
+        //exact same pencilmarks, then add the other
+        //pencilmark to the array containing the cells
+        //that have the exact same pencilmarks as the main cell
+        if (stack_equals(our_pencilmarks, other_pencilmarks))
+        {
+            same_buffer[same_counter++] = other;
+        }
+        else
+        {
+            //otherwise add it to the compliments array
+            //this means that the cell is empty and has
+            //at least one different pencilmark, or
+            //doesn't have as many pencilmarks
+            comp_buffer[comp_counter++] = other;
+        }
+    }
+
+    *same_num = same_counter;
+    *comp_num = comp_counter;
+}
+
 /*
  * This function finds whether two cells of the same house have the exact same
  * two pencilmarks. If that's the case then these two values can be removed from
