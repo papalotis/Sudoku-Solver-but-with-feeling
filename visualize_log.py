@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_data(xs, ys, deg=1):
+def plot_data(xs, ys, deg=1, name="logfile"):
     coeff = np.array(np.polyfit(xs, ys, deg)[::-1])
 
     mx, mn = max(xs), min(xs)
@@ -15,34 +15,45 @@ def plot_data(xs, ys, deg=1):
     xmatrix = np.power(xmatrix, powers)
     yline = np.dot(xmatrix, coeff)
 
-    fig, ax = plt.subplots()
-    ax.plot(xs, ys, 'o')
-    ax.plot(xline, yline, "r-")
-    ax.set_title('Relationship between steps and time\n for {} and {} puzzles'.format(
-        filename, xs.shape[0]))
+    ax.plot(xs, ys, 'o', label="Points " + name)
+    ax.plot(xline, yline, '-', label="Polyfit " + name)
+    ax.set_title('Relationship between steps and time')
+
+    plt.xlim([0, 30000])
+    plt.ylim([0, 1.2])
     plt.xlabel("Steps")
     plt.ylabel("Time (s)")
-    plt.show()
+    plt.legend()
 
+
+global ax
+fig, ax = plt.subplots()
 
 # get data from file
-global filename
-filename = "logs/logs.txt" if len(sys.argv) == 1 else sys.argv[1]
-with open(filename) as f:
-    read_data = f.read()
+global files
+files = ["logs/logs.txt"]
 
-# first line contains info about the run itself
-lines = read_data.split("\n")[1:]
-data_steps = np.array([int(line.split(" ")[0])
-                       for line in lines if line != ""])
+if (len(sys.argv) > 1):
+    files = sys.argv[1:]
 
-data_time = np.array([float(line.split(" ")[1])
-                      for line in lines if line != ""])
+for filename in files:
 
-data_empty = np.array([float(line.split(" ")[2])
-                       for line in lines if line != ""])
+    with open(filename) as f:
+        read_data = f.read()
 
-plot_data(data_steps, data_time)
+    # first line contains info about the run itself
+    lines = read_data.split("\n")[1:]
+    data_steps = np.array([int(line.split(" ")[0])
+                           for line in lines if line != ""])
 
+    data_time = np.array([float(line.split(" ")[1])
+                          for line in lines if line != ""])
+
+    data_empty = np.array([float(line.split(" ")[2])
+                           for line in lines if line != ""])
+
+    plot_data(data_steps, data_time, name=filename)
+
+plt.show()
 # plt.hist(sorted(data_steps))
 # plt.show()
