@@ -7,6 +7,8 @@
 
 #define min(a, b) (a < b) ? a : b
 
+#define bit_is_set(b, n) b &(1 << n) != 0
+
 #define floor_float(a) (float)((int)a)
 
 #if !defined(UTILS_SUD)
@@ -20,5 +22,6 @@ int strequals(char *s1, char *s2);
 int compare_int(const void *a, const void *b);
 int compare_float(const void *a, const void *b);
 char *format_time_seconds(float timeSeconds, char *buff, int buff_size);
+int bitCount(unsigned int u)
 
 #endif // UTILS_SUD

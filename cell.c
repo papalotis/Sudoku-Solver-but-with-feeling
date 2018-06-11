@@ -245,7 +245,7 @@ void cell_calculate_pencilmarks(Cell *c, Cell **sud)
  * It receives a cell as input, as well as the cell array that defines the sudoku
  * and a list of indeces that are in the same row, column or box as this cell.
  */
-int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces)
+int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
 {
     //if the cell has at most one pencilmark, then obviously we don't need
     //to consider it
@@ -257,7 +257,7 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces)
     //for every cell that is in that house
     for (int i = 0; i < 9; i++)
     {
-        Cell *n = sud[indeces[i]];
+        Cell *n = sud[house_indeces[i]];
         //if it's the same cell as the one we are observing then we can ignore it
         if (n->index == c->index)
             continue;
