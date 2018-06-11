@@ -22,6 +22,6 @@ int strequals(char *s1, char *s2);
 int compare_int(const void *a, const void *b);
 int compare_float(const void *a, const void *b);
 char *format_time_seconds(float timeSeconds, char *buff, int buff_size);
-int bitCount(unsigned int u)
+// int bitCount(unsigned int u)
 
 #endif // UTILS_SUD
