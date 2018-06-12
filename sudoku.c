@@ -416,8 +416,8 @@ int sudoku_do_pencilmarks(Sudoku *s)
         //find hidden singles
         sudoku_eliminate_pencilmakrs(s);
         //find naked pairs
-        sudoku_find_naked_pencilmarks_pairs(s);
-        // sudoku_find_naked_pencilmarks_partners(s);
+        // sudoku_find_naked_pencilmarks_pairs(s);
+        sudoku_find_naked_pencilmarks_partners(s);
     }
     else
     {
