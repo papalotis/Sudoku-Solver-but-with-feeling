@@ -8,7 +8,7 @@ def plot_data(xs, ys, deg=1, name="logfile"):
 
     mx, mn = max(xs), min(xs)
     rng = mx - mn
-    xline = np.arange(mn, mx + rng/11, rng/10)
+    xline = np.arange(mn, mx + rng/1001, rng/1000)
     xmatrix = np.tile(xline, (coeff.shape[0], 1)).transpose()
     powers = np.arange(coeff.shape[0])
 
@@ -19,8 +19,8 @@ def plot_data(xs, ys, deg=1, name="logfile"):
     ax.plot(xline, yline, '-', label="Polyfit " + name)
     ax.set_title('Relationship between steps and time')
 
-    plt.xlim([0, 30000])
-    plt.ylim([0, 1.2])
+    # plt.xlim([0, 30000])
+    # plt.ylim([0, 1.2])
     plt.xlabel("Steps")
     plt.ylabel("Time (s)")
     plt.legend()
@@ -52,7 +52,7 @@ for filename in files:
     data_empty = np.array([float(line.split(" ")[2])
                            for line in lines if line != ""])
 
-    plot_data(data_steps, data_time, name=filename)
+    plot_data(data_steps, data_time, name=filename, deg=4)
 
 plt.show()
 # plt.hist(sorted(data_steps))
