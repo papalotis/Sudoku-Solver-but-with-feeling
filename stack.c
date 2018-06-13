@@ -428,7 +428,7 @@ stack *stack_difference(stack *s1, stack *s2, stack *to_write_in)
 {
     if (to_write_in != NULL)
     {
-        stack_free(to_write_in);
+        free_stack(to_write_in);
     }
     //WARNING WE CREATE A NEW STACK
     //IT NEEDS TO BE FREED AT SOME POINT BY THE CALLER
