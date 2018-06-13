@@ -107,23 +107,20 @@ stack *stack_clone(stack *s)
     //get the head of the input stack
     elem *cur = s->sp;
 
-    //we will be putting the values
-    //of the stack to an array, and then
-    //push the values all at once from the array.
-    //we will be putting the values backwards in the array
-    //to address the lifo nature of the stack
-    int counter = s->size - 1;
+    /**
+     * We will be going through the elements of the original stack
+     * and push the value of each element to the new stack
+     */
     //for every element in the stack
     while (cur)
     {
-        //put the value of the stack elements in the array
-        vals[counter--] = cur->data;
+        //get the value of the element
+        int val = cur->data;
+        //push it to the new stack
+        stack_push(copy, val);
         //and move to the next element
         cur = cur->next;
     }
-    //push the values we got from the stack
-    //to the new stack
-    stack_push_many(copy, vals, s->size);
 
     //and return the stack we created
     return copy;
@@ -370,6 +367,84 @@ int stack_contains(stack *s, int val)
     //we traversed through the entire stack and couldn't find
     //an element with that value so we can safely return false
     return 0;
+}
+
+/**
+ * This function returns a stack containing only the
+ * values that are in both the input stacks and in the
+ * same position
+ * stack_intersection([3,1,5], [3,1,5]) -> [3,1,5]
+ * stack_intersection([1,3,4], [3,1,5]) -> []
+ * stack_intersection([3,4,2], [3,1,5]) -> [3]
+ */
+stack *stack_intersection_one_to_one(stack *s1, stack *s2, stack *to_write_in)
+{
+    //if the caller didn't provide a
+    //stack to write in then create one
+    //WARNING: THIS NEEDS DO BE FREED LATER
+    if (to_write_in == NULL)
+    {
+        to_write_in = create_stack();
+    }
+    else
+    {
+        //if the caller did provide a stack then clear it
+        stack_clear(to_write_in);
+    }
+
+    //declare two elem variables, that will each traverse each stack
+    elem *e1, *e2;
+    //they both start at the head of each stack
+    e1 = s1->sp;
+    e2 = s2->sp;
+    //so long as there are elements to consider
+    while (e1 != NULL && e2 != NULL)
+    {
+        //if we found a pair of elements that are equal
+        if (e1->data == e2->data)
+        {
+            //push it to the return stack
+            stack_push(to_write_in, e1->data);
+        }
+        //consider the next elemtent of each stack
+        e1 = e1->next;
+        e2 = e2->next;
+    }
+    //we went through both stacks completely and could not find an unequal pair
+    //therefore the stacks must be equal
+    return to_write_in;
+}
+
+/**
+ * This functions returns a stack containing the 
+ * elements that appear only in s1
+ * 
+ * stack_difference([1,2,3], [1,2]) -> [3]
+ * stack_difference([1,2], [1,2,3]) -> []
+ * stack_difference([3,4],[1,2,3,4,5,6]) -> []
+ * stack_difference([5,6], []) -> [5,6]
+ */
+stack *stack_difference(stack *s1, stack *s2, stack *to_write_in)
+{
+    if (to_write_in != NULL)
+    {
+        stack_free(to_write_in);
+    }
+    //WARNING WE CREATE A NEW STACK
+    //IT NEEDS TO BE FREED AT SOME POINT BY THE CALLER
+    to_write_in = stack_clone(s1);
+
+    elem *e2 = s2->sp;
+    while (e2)
+    {
+        //for every element in the second stack
+        //try and remove it from the first stack
+        //if it isn't in the first stack nothing happens
+        stack_remove(to_write_in, e2->data);
+        e2->next;
+    }
+
+    return to_write_in;
 }
 
 /**

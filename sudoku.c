@@ -414,7 +414,7 @@ int sudoku_do_pencilmarks(Sudoku *s)
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
         //find hidden singles
-        sudoku_eliminate_pencilmakrs(s);
+        sudoku_find_hidden_pencilmakrs(s);
         //find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
     }
@@ -525,7 +525,7 @@ void sudoku_calculate_pencilmarks(Sudoku *s)
  * This function finds hidden signles.
  * https://www.learn-sudoku.com/hidden-singles.html
  */
-void sudoku_eliminate_pencilmakrs(Sudoku *s)
+void sudoku_find_hidden_pencilmakrs(Sudoku *s)
 {
     //for every cell
     for (int i = 0; i < s->size; i++)

@@ -33,6 +33,8 @@ int stack_is_empty(stack *s);
 char *stack_to_string(stack *s, char *buff);
 void stack_print(stack *s);
 int stack_contains(stack *s, int val);
+stack *stack_intersection_one_to_one(stack *s1, stack *s2, stack *to_write_in);
+stack *stack_difference(stack *s1, stack *s2, stack *to_write_in);
 int stack_equals(stack *s1, stack *s2);
 
 #endif // STACK_H
