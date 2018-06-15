@@ -18,6 +18,8 @@ typedef struct _Sudoku
     stack *indeces_history;
     int nextIndex;
 
+    int print_history;
+
     int *empty_indeces;
 
     int *value_freq;
@@ -32,6 +34,7 @@ typedef struct _Sudoku
 Sudoku *create_sudoku();
 void free_sudoku(Sudoku *s);
 int sudoku_set_with_pencilmarks(Sudoku *s, int dp);
+int sudoku_set_print_history(Sudoku *s, int ph);
 char *sudoku_to_string_simple(Sudoku *s, char *buff);
 char *sudoku_to_string_fancy(Sudoku *s, char *buff);
 void sudoku_print(Sudoku *s);

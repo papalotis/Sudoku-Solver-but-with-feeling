@@ -24,6 +24,9 @@ int with_pencilmarks = 1;
 int log_stats = 0;
 char log_filename[40] = "logs/logs.txt";
 
+//
+int print_history = 0;
+
 #pragma region arguments
 /**
  * This function handles the command line arguments
@@ -40,6 +43,9 @@ void handle_args(int argc, char *argv[])
     char *pencilmarks_abr = "-p";
     char *log_arg = "-log";
     char *logs_dir = "logs/";
+    char *print_history_arg = "-printhistory";
+    char *print_history_arg_abr = "-ph";
+    char *history_dir = "history/";
 
     //the zero'th argument is the program
     //itself, so start from the first arguemnt
@@ -87,7 +93,7 @@ void handle_args(int argc, char *argv[])
             //and store it in the global variable
             with_pencilmarks = atoi(argv[i]);
         }
-
+        //if we need to log the results of each sudoku in a file
         if (strequals(arg, log_arg))
         {
             //set the global variable so that we log the stats
@@ -104,6 +110,11 @@ void handle_args(int argc, char *argv[])
                     strcat(log_filename, argv[++i]);
                 }
             }
+        }
+        //if we need to log the history of the sudoku
+        if (strequals(arg, print_history_arg) || strequals(arg, print_history_arg_abr))
+        {
+            print_history = 1;
         }
     }
 }
@@ -163,6 +174,7 @@ int main(int argc, char *argv[])
 
         //create a sudoku intance from the given array
         Sudoku *s = sudoku_create_from_char(sud_to_solve, with_pencilmarks);
+        sudoku_set_print_history(s, print_history);
 
         if (print) //print the unsolved puzzle if the user wants us to
         {

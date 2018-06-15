@@ -95,6 +95,11 @@ int sudoku_set_with_pencilmarks(Sudoku *s, int dp)
     s->with_pencilmarks = dp;
     return s->with_pencilmarks;
 }
+int sudoku_set_print_history(Sudoku *s, int ph)
+{
+    s->print_history = ph;
+    return s->print_history;
+}
 
 #pragma region printing
 
@@ -379,6 +384,12 @@ int sudoku_solve_step(Sudoku *s)
  */
 int sudoku_solve(Sudoku *s, int *result, int *steps)
 {
+    FILE *history_file = NULL;
+    if (s->print_history)
+    {
+        history_file = fopen("history/stories.txt", "w");
+    }
+
     //assume that we will need to run at least one more step
     int r = SUDOKU_UNDECIDED;
 
@@ -390,7 +401,19 @@ int sudoku_solve(Sudoku *s, int *result, int *steps)
         //run a step of the solution algorithm
         //and get its decision
         r = sudoku_solve_step(s);
+
+        if (history_file)
+        {
+            char sud_str[82];
+            fprintf(history_file, "%s\n", sudoku_to_string_simple(s, sud_str));
+        }
+
         counter++;
+    }
+
+    if (history_file)
+    {
+        fclose(history_file);
     }
 
     //fill in the values for the result and steps variables
