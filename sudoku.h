@@ -51,6 +51,8 @@ void sudoku_calculate_pencilmarks(Sudoku *s);
 void sudoku_find_hidden_pencilmakrs(Sudoku *s);
 void sudoku_find_naked_pencilmarks_partners(Sudoku *s);
 void sudoku_fill_rows_columns_boxes_arrays(Sudoku *s);
+void sudoku_do_pointing_pairs(Sudoku *s);
+void sudoku_do_box_pointing_pairs(Sudoku *s);
 int sudoku_get_empty_indeces(Sudoku *s, int *buf);
 int sudoku_is_valid(Sudoku *s);
 int sudoku_is_solved(Sudoku *s);

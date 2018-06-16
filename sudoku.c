@@ -1,5 +1,6 @@
 
 #include "sudoku.h"
+#include "box_algos.h"
 
 #define INDEX_UNINITIALIZED -2
 #define NO_VALID_POS -1
@@ -441,6 +442,8 @@ int sudoku_do_pencilmarks(Sudoku *s)
         sudoku_find_hidden_pencilmakrs(s);
         //find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
+        //find pointing pairs
+        // sudoku_do_pointing_pairs(s);
     }
     else
     {
@@ -652,6 +655,41 @@ void sudoku_fill_rows_columns_boxes_arrays(Sudoku *s)
         s->rows[cy][counters_rows[cy]++] = i;
         //and box
         s->boxes[cb][counters_boxes[cb]++] = i;
+    }
+}
+
+void sudoku_do_pointing_pairs(Sudoku *s)
+{
+    //for every cell
+    for (int i = 0; i < s->size; i++)
+    {
+        //the index of the i'th cell that is empty
+        int index = s->empty_indeces[i];
+
+        //if the index is negative then we have gone through all
+        //the possible cells that are empty
+        if (index < 0)
+            break;
+
+        Cell *c = s->nodes[index];
+        //get its x,y,box
+        int cx = cell_calculate_x(c);
+        int cy = cell_calculate_y(c);
+        int cb = cell_calculate_box(c);
+
+        //run the hidden single with the cell in its row
+        cell_pointing_pair(c, s->nodes, s->boxes[cb], s->rows[cy]);
+        cell_pointing_pair(c, s->nodes, s->boxes[cb], s->columns[cx]);
+    }
+}
+
+void sudoku_do_box_pointing_pairs(Sudoku *s)
+{
+    //for every box
+    for (int i = 0; i < 9; i++)
+    {
+        //find the poinitng pairs
+        box_find_pointing_pairs(s, s->boxes[i]);
     }
 }
 
