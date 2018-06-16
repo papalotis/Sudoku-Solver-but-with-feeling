@@ -15,6 +15,7 @@ typedef PencilmarksSet PSet;
 PSet *pencilmarks_set_create();
 void pencilmarks_set_free(PSet *ps);
 int pencilmarks_set_contains(PSet *ps, int val);
+int pencilmarks_set_is_subset(PSet *ps1, PSet *ps2);
 int pencilmarks_set_get_size(PSet *ps);
 int pencilmarks_set_add_pencilmark(PSet *ps, int val);
 int pencilmarks_set_remove_pencilmark(PSet *ps, int val);

@@ -37,7 +37,7 @@ int pencilmarks_set_contains(PSet *ps, int val)
 }
 
 /**
- * Returns true if ps2 conly ontains elements that 
+ * Returns true if ps2 only contains elements that 
  * are also in ps1
  */
 int pencilmarks_set_is_subset(PSet *ps1, PSet *ps2)

@@ -50,7 +50,6 @@ int sudoku_find_next_index(Sudoku *s);
 void sudoku_calculate_pencilmarks(Sudoku *s);
 void sudoku_find_hidden_pencilmakrs(Sudoku *s);
 void sudoku_find_naked_pencilmarks_partners(Sudoku *s);
-void sudoku_find_naked_pencilmarks_pairs(Sudoku *s);
 void sudoku_fill_rows_columns_boxes_arrays(Sudoku *s);
 int sudoku_get_empty_indeces(Sudoku *s, int *buf);
 int sudoku_is_valid(Sudoku *s);

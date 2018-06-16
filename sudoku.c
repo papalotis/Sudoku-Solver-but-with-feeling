@@ -616,34 +616,6 @@ void sudoku_find_naked_pencilmarks_partners(Sudoku *s)
 }
 
 /*
- * This function finds naked pairs
- * https://www.learn-sudoku.com/naked-pairs.html
- */
-void sudoku_find_naked_pencilmarks_pairs(Sudoku *s)
-{
-    //for every cell
-    for (int i = 0; i < s->size; i++)
-    {
-        //the index of the i'th cell that is empty
-        int index = s->empty_indeces[i];
-
-        //if the index is negative then we have gone through all
-        //the possible cells that are empty
-        if (index < 0)
-            break;
-
-        Cell *c = s->nodes[index];
-        int cx = cell_calculate_x(c);
-        int cy = cell_calculate_y(c);
-        int cb = cell_calculate_box(c);
-
-        cell_find_naked_pairs(c, s->nodes, s->rows[cy]);
-        cell_find_naked_pairs(c, s->nodes, s->columns[cx]);
-        cell_find_naked_pairs(c, s->nodes, s->boxes[cb]);
-    }
-}
-
-/*
 This function calculates the indeces of all the houses of a
 sudoku puzzle. In theory this could be hard-coded but obviously this solution
 is more elegant

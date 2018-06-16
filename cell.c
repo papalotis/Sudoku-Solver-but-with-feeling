@@ -321,7 +321,7 @@ void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
     if (num_same != pencilmarks_set_get_size(c->pencilmakrs) - 1)
         return;
 
-    //for every other cell, remove our pencilmarks from their pencilmarks
+    //for every complement cell, remove our pencilmarks from their pencilmarks
     for (int i = 0; i < num_comp; i++)
     {
         Cell *to_remove_from = complements[i];
@@ -382,66 +382,6 @@ void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int
 
     *same_num = same_counter;
     *comp_num = comp_counter;
-}
-
-/*
- * This function finds whether two cells of the same house have the exact same
- * two pencilmarks. If that's the case then these two values can be removed from
- * all the other cells of that house
- */
-void cell_find_naked_pairs(Cell *c, Cell **sud, int *indeces)
-{
-    //we only care about cells that don't have a value
-    if (c->value != 0)
-        return;
-    //for a cell to be a valid naked pair it needs to have exactly two pencilmakrs
-    if (pencilmarks_set_get_size(c->pencilmakrs) != 2)
-        return;
-
-    //for every cell in the house
-    for (int i = 0; i < 9; i++)
-    {
-        Cell *other = sud[indeces[i]];
-
-        //ignore the cell itself in the house
-        if (c->index == other->index)
-            continue;
-        //if the cell is not empty ignore it
-        if (other->value != 0)
-            continue;
-        //if the cell also doesn't have two pencilmakrs ignore it
-        if (pencilmarks_set_get_size(other->pencilmakrs) != 2)
-            continue;
-
-        //if we found a naked pair
-        if (pencilmarks_set_equals(c->pencilmakrs, other->pencilmakrs))
-        {
-            //we can remove the values from all the other cells
-            int val1 = stack_peek(c->pencilmakrs->list);
-            int val2 = c->pencilmakrs->list->sp->next->data;
-
-            //for every cell in the house
-            for (int i = 0; i < 9; i++)
-            {
-                //get the cell
-                Cell *to_remove_from = sud[indeces[i]];
-                //and its index
-                int index = to_remove_from->index;
-                //if the cell has the same index as one of the two naked
-                //pair cells, then ignore it
-                if (index == c->index || index == other->index)
-                    continue;
-                //if the cell is not empty also ignore it
-                if (to_remove_from->value != 0)
-                    continue;
-
-                //remove all the instances of those two values
-                //from its pencilmarks stack
-                pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val1);
-                pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val2);
-            }
-        }
-    }
 }
 
 int cell_calculate_error(Cell *c, Cell **sud)
