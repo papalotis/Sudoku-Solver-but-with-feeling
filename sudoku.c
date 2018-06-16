@@ -436,9 +436,9 @@ int sudoku_do_pencilmarks(Sudoku *s)
         sudoku_get_empty_indeces(s, s->empty_indeces);
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
-        //find hidden singles
+        // //find hidden singles
         sudoku_find_hidden_pencilmakrs(s);
-        //find naked partners
+        // find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
     }
     else
