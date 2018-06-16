@@ -52,7 +52,7 @@ for filename in files:
     data_empty = np.array([float(line.split(" ")[2])
                            for line in lines if line != ""])
 
-    plot_data(data_steps, data_time, name=filename, deg=4)
+    plot_data(data_steps, data_time, name=filename, deg=10)
 
 plt.show()
 # plt.hist(sorted(data_steps))

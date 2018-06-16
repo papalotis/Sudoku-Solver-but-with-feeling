@@ -94,4 +94,5 @@ end
 
 function love.draw()
     draw_sudoku_from_string(lines[counter])
+    counter = math.min(counter + 1, #lines)
 end

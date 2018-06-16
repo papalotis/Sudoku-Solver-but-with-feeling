@@ -5,3 +5,4 @@ sudoku.csv
 logs/*
 a.out
 test_utils*
+history/*
