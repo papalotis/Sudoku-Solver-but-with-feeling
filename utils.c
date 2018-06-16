@@ -91,8 +91,8 @@ int compare_float(const void *a, const void *b)
 /**
  * This function receives a time value in seconds and converts it to
  * human readable string
- * 2.45 becomes -> 2.45 seconds
- * 124.3 becomes -> 2 minutes, 4.3 seconds
+ * 2.45 becomes -> 2 seconds 450 millis
+ * 124.3 becomes -> 2 minutes, 4 seconds 300 millis
  * The arguments are the timevalue, and a buffer to put the string in
  */
 char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
@@ -168,10 +168,31 @@ char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
     return buff;
 }
 
-// int bitCount(unsigned int u)
-// {
-//     unsigned int uCount;
+int get_bit(int value, int position)
+{
+    return (value >> position) & 0x1;
+}
 
-//     uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
-//     return ((uCount + (uCount >> 3)) & 030707070707) % 63;
-// }
+int set_bit(int *value, int position, short new_bit_value)
+{
+
+    int orig_value = *value;
+
+    int mask_for_all_but_pos = ~(1 << position);
+
+    //now the bit at the desired position is 0
+    int new_value = orig_value & mask_for_all_but_pos;
+
+    new_value |= (new_bit_value << position);
+    *value = new_value;
+}
+
+int is_power_of_two(int val)
+{
+    return val && (!(val & (val - 1)));
+}
+
+int trailing_zeros(int val)
+{
+    return (val) ? __builtin_ctz(val) : -1;
+}
