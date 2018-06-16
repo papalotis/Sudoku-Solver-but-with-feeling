@@ -22,3 +22,4 @@ int pencilmarks_set_clear(PSet *ps);
 int pencilmarks_set_pop_value(PSet *ps);
 int pencilmarks_set_equals(PSet *ps1, PSet *ps2);
 PSet *pencilmarks_set_intersection(PSet *ps1, PSet *ps2);
+PSet *pencilmarks_set_difference(PSet *to_keep, PSet *other);
