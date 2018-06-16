@@ -3,8 +3,8 @@
 #define SUDOKU_H
 #include <string.h>
 #include <stdio.h>
-#include "cell.h"
 #include "utils.h"
+#include "cell.h"
 
 #define SUDOKU_SOLVED 1
 #define SUDOKU_NO_SOLUTUION -1

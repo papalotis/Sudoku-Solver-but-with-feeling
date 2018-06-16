@@ -461,10 +461,10 @@ int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
         Cell *c = s->nodes[i];
         if (cell_is_empty(c))
         {
-            stack_clear(c->pencilmakrs);
+            pencilmarks_set_clear(c->pencilmakrs);
             for (int val = 1; val <= 9; val++)
             {
-                stack_push(s->nodes[i]->pencilmakrs, val);
+                pencilmarks_set_add_pencilmark(s->nodes[i]->pencilmakrs, val);
             }
         }
     }
@@ -504,7 +504,7 @@ int sudoku_find_next_index(Sudoku *s)
         //if the best yet is non existent or the stack of the cell that
         //we currently observe is smaller than the current best
         if (best == NULL ||
-            (stack_get_size(c->pencilmakrs) < stack_get_size(best->pencilmakrs)))
+            (pencilmarks_set_get_size(c->pencilmakrs) < pencilmarks_set_get_size(best->pencilmakrs)))
         {
 
             //make the current cell the current best
@@ -514,7 +514,7 @@ int sudoku_find_next_index(Sudoku *s)
         //if the stack of the current best is empty, since the size of the stack
         //will never be negative we can break out of the loop now and return the
         //current best as the best
-        if (stack_is_empty(best->pencilmakrs))
+        if (pencilmarks_set_get_size(best->pencilmakrs) == 0)
             break;
     }
 

@@ -1,6 +1,5 @@
 #include "cell.h"
-#include <math.h>
-#include <stdio.h>
+#include "utils.h"
 
 /**
  * A cell instance represents a sudoku cell. Each cell has a value which is the
@@ -25,7 +24,7 @@ Cell *create_cell()
     c->y = -1;
     c->box = -1;
     c->neighbors = (int *)malloc(sizeof(int) * 20);
-    c->pencilmakrs = create_stack();
+    c->pencilmakrs = pencilmarks_set_create();
     return c;
 }
 
@@ -37,7 +36,7 @@ Cell *create_cell()
 void free_cell(Cell *c)
 {
     free(c->neighbors);
-    free_stack(c->pencilmakrs);
+    pencilmarks_set_free(c->pencilmakrs);
     free(c);
 }
 
@@ -81,10 +80,6 @@ int cell_calculate_y(Cell *c)
  */
 int cell_calculate_box(Cell *c)
 {
-    //dividing by 3 and then multiplying by 3 is redundant
-    //but it's more intuitive, this function is only used for setup
-    //so we can afford not to optimise to "death"
-
     int bx = cell_calculate_x(c) / 3;
     int by = cell_calculate_y(c) / 3;
 
@@ -106,14 +101,14 @@ int cell_is_empty(Cell *c)
 int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
 {
     //if we have no choise we can directly pop the value from the stack
-    if (stack_get_size(c->pencilmakrs) < 2)
+    if (pencilmarks_set_get_size(c->pencilmakrs) < 2)
     {
-        return stack_pop(c->pencilmakrs);
+        return pencilmarks_set_pop_value(c->pencilmakrs);
     }
 
-    int val = stack_peek(c->pencilmakrs);
+    int val = stack_peek(c->pencilmakrs->list);
     //iterate over the values in the pencilmarks stack
-    elem *cur = c->pencilmakrs->sp->next;
+    elem *cur = c->pencilmakrs->list->sp->next;
     //so long as there are pencilmarks to consider
     while (cur)
     {
@@ -131,7 +126,7 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
     }
 
     //remove the value from the pencilmarks
-    stack_remove_all(c->pencilmakrs, val);
+    pencilmarks_set_remove_pencilmark(c->pencilmakrs, val);
 
     //return the pencilmark
     return val;
@@ -141,8 +136,7 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
  * This function calculates the indeces of the cells to which a cell is adjecent.
  * Two cells are adjecent if any of their x,y,box components are equal. Also no
  * cell is adjecent to itself. Each cell should have 20 neighbors. This function 
- * should only be called once when the cell is initialized called only once 
- * when the cell is initialized.
+ * should only be called once when the cell is initialized.
  */
 void cell_calculate_neighbor_indeces(Cell *c)
 {
@@ -202,7 +196,7 @@ void cell_calculate_pencilmarks(Cell *c, Cell **sud)
         return;
 
     //remove any values that are already in the pencilmakrs stack
-    stack_clear(c->pencilmakrs);
+    pencilmarks_set_clear(c->pencilmakrs);
     //for each value in [1,...,9]
     for (int val = 1; val <= 9; val++)
     {
@@ -234,7 +228,7 @@ void cell_calculate_pencilmarks(Cell *c, Cell **sud)
         if (still_valid)
         {
             //push that value in the pencilmakrs stack
-            stack_push(c->pencilmakrs, val);
+            pencilmarks_set_add_pencilmark(c->pencilmakrs, val);
         }
     }
 }
@@ -249,11 +243,11 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
 {
     //if the cell has at most one pencilmark, then obviously we don't need
     //to consider it
-    if (stack_get_size(c->pencilmakrs) < 2)
+    if (pencilmarks_set_get_size(c->pencilmakrs) < 2)
         return 0;
 
-    //make a copy of the pencilmarks stack
-    stack *clone = stack_clone(c->pencilmakrs);
+    int penclimarks_mask = c->pencilmakrs->mask;
+
     //for every cell that is in that house
     for (int i = 0; i < 9; i++)
     {
@@ -265,40 +259,28 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
         if (n->value != 0)
             continue;
 
-        //start at the head of that cells pencilmarks
-        elem *cur = n->pencilmakrs->sp;
-        //so long as there are elements to consider
-        while (cur != NULL)
-        {
-            //remove all the instances of that elements value
-            //from the cloned list
-            stack_remove_all(clone, cur->data);
-            //move to the next element
-            cur = cur->next;
-        }
+        //make every position that a neighboring cell contains a
+        //pencilmark a zero
+        penclimarks_mask &= ~(n->pencilmakrs->mask);
 
-        //if all the elements have been removed from the cloned stack
-        //then we can safely assume that we can break out of the loop
-        //since no other elements can be removed, and no elements can be
-        //added in this loop
-        if (stack_is_empty(clone))
+        if (penclimarks_mask == 0)
             break;
     }
+
     //if in the end the cloned stack has exactly one value
     //that means that this cell, has a unique pencilmark in this house
-    if (stack_get_size(clone) == 1)
+    if (is_power_of_two(penclimarks_mask))
     {
-        //remove all the elements from the pencilmarks stack of that cell
-        stack_clear(c->pencilmakrs);
-        //and push the value that still is in the cloned stack to it
-        stack_push(c->pencilmakrs, stack_pop(clone));
+        //get the unique pencilmark
+        int unique_pencilmark = trailing_zeros(penclimarks_mask);
+        //remove all the values from the pencilmarks set
+        pencilmarks_set_clear(c->pencilmakrs);
+        //add the unique pencilmark
+        pencilmarks_set_add_pencilmark(c->pencilmakrs, unique_pencilmark);
     }
 
-    //free the cloned stack from memory
-    free_stack(clone);
-
     //and return true if anything changed in the stack of that cell
-    return stack_get_size(c->pencilmakrs) == 1;
+    return pencilmarks_set_get_size(c->pencilmakrs) == 1;
 }
 
 void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
@@ -307,9 +289,9 @@ void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
     if (!cell_is_empty(c))
         return;
 
-    //if the cell doesn't have ant ambigiouity then there is no point finding
+    //if the cell doesn't have any ambigiouity then there is no point finding
     //partenrs for it
-    if (stack_get_size(c->pencilmakrs) != 2)
+    if (pencilmarks_set_get_size(c->pencilmakrs) < 2)
         return;
 
     //if the cell has more than 3 cells, the chances that it will
@@ -336,7 +318,7 @@ void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
 
     //if we didn't find as many valid cells as we have pencilmarks
     //then we can't do much more
-    if (num_same != stack_get_size(c->pencilmakrs) - 1)
+    if (num_same != pencilmarks_set_get_size(c->pencilmakrs) - 1)
         return;
 
     //for every other cell, remove our pencilmarks from their pencilmarks
@@ -344,11 +326,11 @@ void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
     {
         Cell *to_remove_from = complements[i];
 
-        elem *cur = c->pencilmakrs->sp;
+        elem *cur = c->pencilmakrs->list->sp;
         while (cur)
         {
             int val = cur->data;
-            stack_remove_all(to_remove_from->pencilmakrs, val);
+            pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val);
             cur = cur->next;
         }
     }
@@ -364,8 +346,8 @@ void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int
     int same_counter = 0;
     int comp_counter = 0;
 
-    stack *our_pencilmarks = c->pencilmakrs;
-    stack *other_pencilmarks = NULL;
+    PSet *our_pencilmarks = c->pencilmakrs;
+    PSet *other_pencilmarks = NULL;
     //for every cell in the house
     for (int i = 0; i < 9; i++)
     {
@@ -384,7 +366,7 @@ void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int
         //exact same pencilmarks, then add the other
         //pencilmark to the array containing the cells
         //that have the exact same pencilmarks as the main cell
-        if (stack_equals(our_pencilmarks, other_pencilmarks))
+        if (pencilmarks_set_equals(our_pencilmarks, other_pencilmarks))
         {
             same_buffer[same_counter++] = other;
         }
@@ -413,7 +395,7 @@ void cell_find_naked_pairs(Cell *c, Cell **sud, int *indeces)
     if (c->value != 0)
         return;
     //for a cell to be a valid naked pair it needs to have exactly two pencilmakrs
-    if (stack_get_size(c->pencilmakrs) != 2)
+    if (pencilmarks_set_get_size(c->pencilmakrs) != 2)
         return;
 
     //for every cell in the house
@@ -428,15 +410,15 @@ void cell_find_naked_pairs(Cell *c, Cell **sud, int *indeces)
         if (other->value != 0)
             continue;
         //if the cell also doesn't have two pencilmakrs ignore it
-        if (stack_get_size(other->pencilmakrs) != 2)
+        if (pencilmarks_set_get_size(other->pencilmakrs) != 2)
             continue;
 
         //if we found a naked pair
-        if (stack_equals(c->pencilmakrs, other->pencilmakrs))
+        if (pencilmarks_set_equals(c->pencilmakrs, other->pencilmakrs))
         {
             //we can remove the values from all the other cells
-            int val1 = stack_peek(c->pencilmakrs);
-            int val2 = c->pencilmakrs->sp->next->data;
+            int val1 = stack_peek(c->pencilmakrs->list);
+            int val2 = c->pencilmakrs->list->sp->next->data;
 
             //for every cell in the house
             for (int i = 0; i < 9; i++)
@@ -455,8 +437,8 @@ void cell_find_naked_pairs(Cell *c, Cell **sud, int *indeces)
 
                 //remove all the instances of those two values
                 //from its pencilmarks stack
-                stack_remove_all(to_remove_from->pencilmakrs, val1);
-                stack_remove_all(to_remove_from->pencilmakrs, val2);
+                pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val1);
+                pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val2);
             }
         }
     }

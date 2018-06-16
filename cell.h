@@ -2,7 +2,9 @@
 #if !defined(CELL_H)
 #define CELL_H
 
-#include "stack.h"
+#include "pencilmarks_set.h"
+#include <math.h>
+#include <stdio.h>
 
 typedef struct _Cell
 {
@@ -11,7 +13,7 @@ typedef struct _Cell
     int x, y, box;
     int value;
     int *neighbors;
-    stack *pencilmakrs;
+    PSet *pencilmakrs;
 } Cell;
 
 Cell *create_cell();
