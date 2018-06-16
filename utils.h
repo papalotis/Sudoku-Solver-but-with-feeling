@@ -9,6 +9,7 @@
 #include "file.h"
 
 #define min(a, b) (a < b) ? a : b
+#define max(a, b) (a < b) ? b : a
 
 #define bit_is_set(b, n) b &(1 << n) != 0
 
@@ -26,5 +27,6 @@ int get_bit(int value, int position);
 int set_bit(int *value, int position, short new_bit_value);
 int is_power_of_two(int val);
 int trailing_zeros(int val);
+int leading_zeros(int val);
 
 #endif // UTILS_SUD

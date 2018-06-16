@@ -196,3 +196,8 @@ int trailing_zeros(int val)
 {
     return (val) ? __builtin_ctz(val) : -1;
 }
+
+int leading_zeros(int val)
+{
+    return (val) ? __builtin_clz(val) : -1;
+}
