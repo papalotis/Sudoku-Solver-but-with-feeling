@@ -436,6 +436,7 @@ int sudoku_do_pencilmarks(Sudoku *s)
         sudoku_get_empty_indeces(s, s->empty_indeces);
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
+
         //find hidden singles
         sudoku_find_hidden_pencilmakrs(s);
         //find naked partners
@@ -455,7 +456,6 @@ int sudoku_do_pencilmarks(Sudoku *s)
  */
 int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
 {
-    int nums[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     for (int i = 0; i < s->size; i++)
     {
         Cell *c = s->nodes[i];
@@ -470,6 +470,22 @@ int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
     }
 
     return 1;
+}
+
+/**
+ * Returns the number of pencilmarks in the unfilled cells
+ */
+int sudoku_num_possible_pencilmarks(Sudoku *s, int *empty_indeces)
+{
+    int sum = 0;
+    for (int i = 0; i < s->size; i++)
+    {
+        if (empty_indeces[i] < 0)
+            break;
+        sum += pencilmarks_set_get_size(s->nodes[empty_indeces[i]]->pencilmakrs);
+    }
+
+    return sum;
 }
 
 void sudoku_calculate_value_frequency(Sudoku *s)
