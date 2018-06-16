@@ -10,7 +10,6 @@ typedef struct _Cell
 {
 
     int index;
-    int x, y, box;
     int value;
     int *neighbors;
     PSet *pencilmakrs;
@@ -27,6 +26,7 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq);
 void cell_calculate_neighbor_indeces(Cell *c);
 void cell_calculate_pencilmarks(Cell *c, Cell **sud);
 int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *indeces);
+void cell_pointing_pair(Cell *c, Cell **sud, int *box_indeces, int *line_indeces);
 void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces);
 void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int *house_indeces, Cell **same_buffer,
                                                         int *same_num, Cell **comp_buffer, int *comp_num);

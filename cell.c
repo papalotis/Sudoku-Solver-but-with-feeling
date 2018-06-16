@@ -20,9 +20,6 @@ Cell *create_cell()
     Cell *c = (Cell *)malloc(sizeof(Cell));
     c->value = 0;
     c->index = -1;
-    c->x = -1;
-    c->y = -1;
-    c->box = -1;
     c->neighbors = (int *)malloc(sizeof(int) * 20);
     c->pencilmakrs = pencilmarks_set_create();
     return c;
@@ -150,7 +147,7 @@ void cell_calculate_neighbor_indeces(Cell *c)
     Cell *other = create_cell();
 
     //a counter to know how many cells have been found
-    int counter = 0;
+    int neigbor_counter = 0;
 
     //loop over all possible indeces
     for (int i = 0; i < 81; i++)
@@ -172,9 +169,9 @@ void cell_calculate_neighbor_indeces(Cell *c)
         if (cx == ox || cy == oy || cb == ob)
         {
             //add that index to the neighbors array
-            c->neighbors[counter] = i;
+            c->neighbors[neigbor_counter] = i;
             //increament the counter
-            counter++;
+            neigbor_counter++;
         }
     }
 
@@ -281,6 +278,70 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
 
     //and return true if anything changed in the stack of that cell
     return pencilmarks_set_get_size(c->pencilmakrs) == 1;
+}
+
+void cell_pointing_pair(Cell *c, Cell **sud, int *box_indeces, int *line_indeces)
+{
+
+    if (!cell_is_empty(c))
+        return;
+
+    //if the diffrerence between indeces is 9 or very big then this is a collumn
+    int mode = line_indeces[2] - line_indeces[1] > 2;
+    // printf("adsf %d\n", line_indeces[2] - line_indeces[1]);
+
+    int pencilamark_mask = c->pencilmakrs->mask;
+
+    int our_x = cell_calculate_x(c);
+    int our_y = cell_calculate_y(c);
+    int our_b = cell_calculate_box(c);
+
+    for (int i = 0; i < 9 && pencilamark_mask > 0; i++)
+    {
+        Cell *other = sud[box_indeces[i]];
+        if (c == other || !cell_is_empty(other))
+            continue;
+
+        int other_x = cell_calculate_x(other);
+        int other_y = cell_calculate_y(other);
+
+        //looking for same collumn
+        if (mode && our_x == other_x)
+        {
+            pencilamark_mask &= other->pencilmakrs->mask;
+            // stack_print(other->pencilmakrs->list);
+        }
+        //looking for same row and found one
+        else if (mode == 0 && our_y == other_y)
+        {
+            pencilamark_mask &= other->pencilmakrs->mask;
+            // stack_print(other->pencilmakrs->list);
+        }
+        else
+        {
+            pencilamark_mask &= ~(other->pencilmakrs->mask);
+        }
+        // printf("%d\n", pencilamark_mask);
+    }
+
+    if (__builtin_popcount(pencilamark_mask) == 2)
+    {
+        int val1 = trailing_zeros(pencilamark_mask);
+        int val2 = trailing_zeros(pencilamark_mask ^ (1 << val1));
+        // printf("%d %d %d", pencilamark_mask, val1, val2);
+        // getchar();
+        for (int i = 0; i < 9; i++)
+        {
+            Cell *other = sud[line_indeces[i]];
+            int other_b = cell_calculate_box(other);
+
+            if (!cell_is_empty(other) || our_b == other_b)
+                continue;
+
+            pencilmarks_set_remove_pencilmark(other->pencilmakrs, val1);
+            pencilmarks_set_remove_pencilmark(other->pencilmakrs, val2);
+        }
+    }
 }
 
 void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
