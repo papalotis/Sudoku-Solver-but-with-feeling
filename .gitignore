@@ -6,3 +6,4 @@ logs/*
 a.out
 test_utils*
 history/*
+history/stories.txt
