@@ -437,10 +437,9 @@ int sudoku_do_pencilmarks(Sudoku *s)
         sudoku_get_empty_indeces(s, s->empty_indeces);
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
-
-        //find hidden singles
+        // //find hidden singles
         sudoku_find_hidden_pencilmakrs(s);
-        //find naked partners
+        // find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
         //find pointing pairs
         // sudoku_do_pointing_pairs(s);
@@ -515,10 +514,10 @@ int sudoku_find_next_index(Sudoku *s)
     //iterate over every cell
     for (int i = 0; i < 81; i++)
     {
-        c = s->nodes[i];
-        //ignore cells that are already filled in
-        if (c->value != 0)
-            continue;
+        int index = s->empty_indeces[i];
+        if (index < 0)
+            break;
+        c = s->nodes[index];
 
         //if the best yet is non existent or the stack of the cell that
         //we currently observe is smaller than the current best

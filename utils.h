@@ -28,5 +28,6 @@ int set_bit(int *value, int position, short new_bit_value);
 int is_power_of_two(int val);
 int trailing_zeros(int val);
 int leading_zeros(int val);
+int count_ones(int val);
 
 #endif // UTILS_SUD

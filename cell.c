@@ -103,14 +103,16 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
         return pencilmarks_set_pop_value(c->pencilmakrs);
     }
 
-    int val = stack_peek(c->pencilmakrs->list);
-    //iterate over the values in the pencilmarks stack
-    elem *cur = c->pencilmakrs->list->sp->next;
+    int mask = c->pencilmakrs->mask;
+
+    int val = trailing_zeros(mask);
+    mask ^= 1 << val;
+    //iterate over the values in the pencilmarks
     //so long as there are pencilmarks to consider
-    while (cur)
+    while (mask)
     {
         //the pencilamark we are observing
-        int candidate_value = cur->data;
+        int candidate_value = trailing_zeros(mask);
         //if its frequency is smaller than the pencilmark
         //we which is the best yet
         if (value_freq[candidate_value] < value_freq[val])
@@ -118,8 +120,7 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
             //then this pencilmark is the best yet
             val = candidate_value;
         }
-
-        cur = cur->next;
+        mask ^= (1 << candidate_value);
     }
 
     //remove the value from the pencilmarks
@@ -386,14 +387,7 @@ void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
     for (int i = 0; i < num_comp; i++)
     {
         Cell *to_remove_from = complements[i];
-
-        elem *cur = c->pencilmakrs->list->sp;
-        while (cur)
-        {
-            int val = cur->data;
-            pencilmarks_set_remove_pencilmark(to_remove_from->pencilmakrs, val);
-            cur = cur->next;
-        }
+        to_remove_from->pencilmakrs->mask = pencilmarks_set_difference(to_remove_from->pencilmakrs, c->pencilmakrs);
     }
 }
 

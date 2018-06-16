@@ -201,3 +201,8 @@ int leading_zeros(int val)
 {
     return (val) ? __builtin_clz(val) : -1;
 }
+
+int count_ones(int val)
+{
+    return __builtin_popcount(val);
+}

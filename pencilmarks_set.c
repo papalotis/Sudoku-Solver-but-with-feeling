@@ -11,7 +11,6 @@
 PSet *pencilmarks_set_create()
 {
     PSet *ps = (PSet *)malloc(sizeof(PSet));
-    ps->list = create_stack();
     ps->mask = EMPTY_MASK;
 
     return ps;
@@ -24,7 +23,6 @@ PSet *pencilmarks_set_create()
  */
 void pencilmarks_set_free(PSet *ps)
 {
-    free_stack(ps->list);
     free(ps);
 }
 
@@ -50,7 +48,7 @@ int pencilmarks_set_is_subset(PSet *ps1, PSet *ps2)
  */
 int pencilmarks_set_get_size(PSet *ps)
 {
-    return stack_get_size(ps->list);
+    return count_ones(ps->mask);
 }
 
 int pencilmarks_set_get_min(PSet *ps)
@@ -71,12 +69,6 @@ int pencilmarks_set_get_max(PSet *ps)
  */
 int pencilmarks_set_add_pencilmark(PSet *ps, int val)
 {
-    if (pencilmarks_set_contains(ps, val))
-    {
-        return ALREADY_SET;
-    }
-    //push the value to the stack
-    stack_push(ps->list, val);
     //set the ith bit to 1 to indicate that the value is in
     set_bit(&(ps->mask), val, 1);
 
@@ -90,24 +82,7 @@ int pencilmarks_set_add_pencilmark(PSet *ps, int val)
  */
 int pencilmarks_set_remove_pencilmark(PSet *ps, int val)
 {
-    if (pencilmarks_set_get_size(ps) == 0)
-    {
-        return SET_EMPTY;
-    }
-
-    if (!pencilmarks_set_contains(ps, val))
-    {
-        return CANNOT_DELETE_UNSET;
-    }
-
-    //remove the value from the pencilmarks stack
-    //O(n)
-    stack_remove(ps->list, val);
-    //set the corresponding bit to 0
-    //to indicate that the value
-    //is no longer in the set
     set_bit(&(ps->mask), val, 0);
-
     return 0;
 }
 
@@ -116,8 +91,6 @@ int pencilmarks_set_remove_pencilmark(PSet *ps, int val)
  */
 int pencilmarks_set_clear(PSet *ps)
 {
-    //Remove all the elements from the stack
-    stack_clear(ps->list);
     //Set the mask to zero again
     ps->mask = EMPTY_MASK;
 }
@@ -128,14 +101,10 @@ int pencilmarks_set_clear(PSet *ps)
  */
 int pencilmarks_set_pop_value(PSet *ps)
 {
-    //get the value of the top element of the stack
-    int val = stack_peek(ps->list);
-    //if the val is a valid pencilmark
-    if (val >= 1 && val <= 9)
-    {
-        //remove that pencilmark from the stack
-        pencilmarks_set_remove_pencilmark(ps, val);
-    }
+
+    int val = trailing_zeros(ps->mask);
+    ps->mask ^= (1 << val);
+
     //and return the value
     return val;
 }
@@ -155,24 +124,10 @@ int pencilmarks_set_equals(PSet *ps1, PSet *ps2)
  * THIS FUNCTION ALLOCATES MEMORY THAT NEEDS TO BE 
  * FREED LATER
  */
-PSet *pencilmarks_set_intersection(PSet *ps1, PSet *ps2)
+int pencilmarks_set_intersection(PSet *ps1, PSet *ps2)
 {
 
-    int start = min(pencilmarks_set_get_min(ps1), pencilmarks_set_get_min(ps2));
-    int end = max(pencilmarks_set_get_max(ps1), pencilmarks_set_get_max(ps2));
-
-    PSet *intersection = pencilmarks_set_create();
-    for (int pval = start; pval <= end; pval++)
-    {
-        int in_set_1 = pencilmarks_set_contains(ps1, pval);
-        int in_set_2 = pencilmarks_set_contains(ps2, pval);
-        if (in_set_1 && in_set_2)
-        {
-            pencilmarks_set_add_pencilmark(intersection, pval);
-        }
-    }
-
-    return intersection;
+    return ps1->mask & ps2->mask;
 }
 
 /**
@@ -181,18 +136,8 @@ PSet *pencilmarks_set_intersection(PSet *ps1, PSet *ps2)
  * THIS FUNCTION ALLOCATES MEMORY THAT NEEDS TO BE 
  * FREED LATER
  */
-PSet *pencilmarks_set_difference(PSet *to_keep, PSet *other)
+int pencilmarks_set_difference(PSet *to_keep, PSet *other)
 {
-    PSet *difference = pencilmarks_set_create();
-    for (int pval = 1; pval <= 9; pval++)
-    {
-        int in_set_we_want_to_keep = pencilmarks_set_contains(to_keep, pval);
-        int in_set_other = pencilmarks_set_contains(other, pval);
-        if (in_set_we_want_to_keep && !in_set_other)
-        {
-            pencilmarks_set_add_pencilmark(difference, pval);
-        }
-    }
 
-    return difference;
+    return to_keep->mask & ~other->mask;
 }
