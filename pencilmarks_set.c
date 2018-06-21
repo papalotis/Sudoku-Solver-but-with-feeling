@@ -34,6 +34,34 @@ int pencilmarks_set_contains(PSet *ps, int val)
     return get_bit(ps->mask, val);
 }
 
+void pencilmarks_set_print_mask(int mask)
+{
+    printf("[");
+
+    while (mask)
+    {
+        int val = trailing_zeros(mask);
+        mask &= ~(1 << val);
+
+        printf("%d", val);
+        if (mask != 0)
+        {
+            printf(", ");
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    printf("]\n");
+}
+
+void pencilmarks_set_print(PSet *ps)
+{
+    pencilmarks_set_print_mask(ps->mask);
+}
+
 /**
  * Returns true if ps2 only contains elements that 
  * are also in ps1
@@ -82,7 +110,17 @@ int pencilmarks_set_add_pencilmark(PSet *ps, int val)
  */
 int pencilmarks_set_remove_pencilmark(PSet *ps, int val)
 {
-    set_bit(&(ps->mask), val, 0);
+    if (pencilmarks_set_contains(ps, val))
+    {
+        if (pencilmarks_set_get_size(ps) == 1)
+        {
+            ps->mask = EMPTY_MASK;
+        }
+        else
+        {
+            set_bit(&(ps->mask), val, 0);
+        }
+    }
     return 0;
 }
 
@@ -103,7 +141,8 @@ int pencilmarks_set_pop_value(PSet *ps)
 {
 
     int val = trailing_zeros(ps->mask);
-    ps->mask ^= (1 << val);
+    // ps->mask &= ~(1 << val);
+    pencilmarks_set_remove_pencilmark(ps, val);
 
     //and return the value
     return val;
@@ -121,8 +160,6 @@ int pencilmarks_set_equals(PSet *ps1, PSet *ps2)
 /**
  * Returns a new set that contains the elements
  * that are in both sets
- * THIS FUNCTION ALLOCATES MEMORY THAT NEEDS TO BE 
- * FREED LATER
  */
 int pencilmarks_set_intersection(PSet *ps1, PSet *ps2)
 {
