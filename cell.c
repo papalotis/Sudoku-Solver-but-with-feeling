@@ -105,14 +105,14 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
 
     int mask = c->pencilmakrs->mask;
 
-    int val = trailing_zeros(mask);
-    mask ^= 1 << val;
+    int val = 31 - leading_zeros(mask);
+    mask &= ~(1 << val);
     //iterate over the values in the pencilmarks
     //so long as there are pencilmarks to consider
     while (mask)
     {
         //the pencilamark we are observing
-        int candidate_value = trailing_zeros(mask);
+        int candidate_value = 31 - leading_zeros(mask);
         //if its frequency is smaller than the pencilmark
         //we which is the best yet
         if (value_freq[candidate_value] < value_freq[val])
@@ -120,7 +120,7 @@ int cell_retrieve_next_value_from_pencilmarks(Cell *c, int *value_freq)
             //then this pencilmark is the best yet
             val = candidate_value;
         }
-        mask ^= (1 << candidate_value);
+        mask &= ~(1 << candidate_value);
     }
 
     //remove the value from the pencilmarks
@@ -281,23 +281,23 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
     return pencilmarks_set_get_size(c->pencilmakrs) == 1;
 }
 
-void cell_pointing_pair(Cell *c, Cell **sud, int *box_indeces, int *line_indeces)
+void cell_pointing_pair(Cell *c, Cell **sud, int *row_indeces, int *col_indeces, int *box_indeces)
 {
 
     if (!cell_is_empty(c))
         return;
 
-    //if the diffrerence between indeces is 9 or very big then this is a collumn
-    int mode = line_indeces[2] - line_indeces[1] > 2;
-    // printf("adsf %d\n", line_indeces[2] - line_indeces[1]);
+    if (pencilmarks_set_get_size(c->pencilmakrs) != 2)
+        return;
 
-    int pencilamark_mask = c->pencilmakrs->mask;
+    int row_mask = c->pencilmakrs->mask;
+    int col_mask = c->pencilmakrs->mask;
 
     int our_x = cell_calculate_x(c);
     int our_y = cell_calculate_y(c);
     int our_b = cell_calculate_box(c);
 
-    for (int i = 0; i < 9 && pencilamark_mask > 0; i++)
+    for (int i = 0; i < 9; i++)
     {
         Cell *other = sud[box_indeces[i]];
         if (c == other || !cell_is_empty(other))
@@ -305,42 +305,75 @@ void cell_pointing_pair(Cell *c, Cell **sud, int *box_indeces, int *line_indeces
 
         int other_x = cell_calculate_x(other);
         int other_y = cell_calculate_y(other);
+        int other_mask = other->pencilmakrs->mask;
 
         //looking for same collumn
-        if (mode && our_x == other_x)
+        if (our_x == other_x)
         {
-            pencilamark_mask &= other->pencilmakrs->mask;
-            // stack_print(other->pencilmakrs->list);
+            col_mask &= other_mask;
         }
         //looking for same row and found one
-        else if (mode == 0 && our_y == other_y)
+        else if (our_y == other_y)
         {
-            pencilamark_mask &= other->pencilmakrs->mask;
-            // stack_print(other->pencilmakrs->list);
+            row_mask &= other_mask;
         }
         else
         {
-            pencilamark_mask &= ~(other->pencilmakrs->mask);
+            col_mask &= ~(other_mask);
+            row_mask &= ~(other_mask);
         }
-        // printf("%d\n", pencilamark_mask);
     }
 
-    if (__builtin_popcount(pencilamark_mask) == 2)
+    int do_rows = count_ones(row_mask) == 2;
+    int do_cols = count_ones(col_mask) == 2;
+
+    int row_val1 = trailing_zeros(row_mask);
+    int row_val2 = trailing_zeros(row_mask & ~(1 << row_val1));
+    int col_val1 = trailing_zeros(col_mask);
+    int col_val2 = trailing_zeros(col_mask & ~(1 << col_val1));
+
+    if (do_rows || do_cols)
     {
-        int val1 = trailing_zeros(pencilamark_mask);
-        int val2 = trailing_zeros(pencilamark_mask ^ (1 << val1));
-        // printf("%d %d %d", pencilamark_mask, val1, val2);
+
+        // for (int i = 0; i < 9; i++)
+        // {
+        //     Cell *tc = sud[box_indeces[i]];
+        //     if (c == tc)
+        //         printf("-");
+        //     printf("(%d,%d) ", cell_calculate_x(tc), cell_calculate_y(tc));
+        //     pencilmarks_set_print(tc->pencilmakrs);
+        // }
         // getchar();
         for (int i = 0; i < 9; i++)
         {
-            Cell *other = sud[line_indeces[i]];
-            int other_b = cell_calculate_box(other);
+            if (do_rows)
+            {
+                Cell *other_row_cell = sud[row_indeces[i]];
+                int other_row_b = cell_calculate_box(other_row_cell);
 
-            if (!cell_is_empty(other) || our_b == other_b)
-                continue;
+                if (cell_is_empty(other_row_cell) && (our_b != other_row_b) && !pencilmarks_set_equals(c->pencilmakrs, other_row_cell->pencilmakrs))
+                {
+                    // printf("%d, %d\n", row_val1, row_val2);
+                    // pencilmarks_set_print(other_row_cell->pencilmakrs);
 
-            pencilmarks_set_remove_pencilmark(other->pencilmakrs, val1);
-            pencilmarks_set_remove_pencilmark(other->pencilmakrs, val2);
+                    pencilmarks_set_remove_pencilmark(other_row_cell->pencilmakrs, row_val1);
+                    pencilmarks_set_remove_pencilmark(other_row_cell->pencilmakrs, row_val2);
+                    // pencilmarks_set_print(other_row_cell->pencilmakrs);
+
+                    // getchar();
+                }
+            }
+            if (do_cols)
+            {
+                Cell *other_col_cell = sud[col_indeces[i]];
+                int other_col_b = cell_calculate_box(other_col_cell);
+
+                if (cell_is_empty(other_col_cell) && (our_b != other_col_b))
+                {
+                    // pencilmarks_set_remove_pencilmark(other_col_cell->pencilmakrs, col_val1);
+                    // pencilmarks_set_remove_pencilmark(other_col_cell->pencilmakrs, col_val2);
+                }
+            }
         }
     }
 }
