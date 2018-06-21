@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
             //inform the user that that puzzle has no solution
             //but only if he wants us to
             if (print)
-                printf("This sudoku puzzle has no solution\n");
+                printf("This sudoku puzzle has no solution\n\n");
 
             //and increase the number of sudokus we couldn't solve by 1
             not_solved++;

@@ -1,6 +1,5 @@
 
 #include "sudoku.h"
-#include "box_algos.h"
 
 #define INDEX_UNINITIALIZED -2
 #define NO_VALID_POS -1
@@ -315,6 +314,7 @@ Sudoku *sudoku_create_from_char(char *data, int with_pencilmarks)
  */
 int sudoku_solve_step(Sudoku *s)
 {
+
     //the value that will be returned
     //assume we will keep on solving
     int r = SUDOKU_UNDECIDED;
@@ -431,18 +431,18 @@ int sudoku_solve(Sudoku *s, int *result, int *steps)
  */
 int sudoku_do_pencilmarks(Sudoku *s)
 {
+    //get the indeces that are empty
+    sudoku_get_empty_indeces(s, s->empty_indeces);
     if (s->with_pencilmarks)
     {
-        //get the indeces that are empty
-        sudoku_get_empty_indeces(s, s->empty_indeces);
         //and calculate the pencilmakrs of the sudoku
         sudoku_calculate_pencilmarks(s);
-        // //find hidden singles
+        // find hidden singles
         sudoku_find_hidden_pencilmakrs(s);
         // find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
         //find pointing pairs
-        // sudoku_do_pointing_pairs(s);
+        sudoku_do_pointing_pairs(s);
     }
     else
     {
@@ -466,7 +466,7 @@ int sudoku_fill_pencilmakrs_with_dumb_values(Sudoku *s)
             pencilmarks_set_clear(c->pencilmakrs);
             for (int val = 1; val <= 9; val++)
             {
-                pencilmarks_set_add_pencilmark(s->nodes[i]->pencilmakrs, val);
+                pencilmarks_set_add_pencilmark(c->pencilmakrs, val);
             }
         }
     }
@@ -676,19 +676,8 @@ void sudoku_do_pointing_pairs(Sudoku *s)
         int cy = cell_calculate_y(c);
         int cb = cell_calculate_box(c);
 
-        //run the hidden single with the cell in its row
-        cell_pointing_pair(c, s->nodes, s->boxes[cb], s->rows[cy]);
-        cell_pointing_pair(c, s->nodes, s->boxes[cb], s->columns[cx]);
-    }
-}
-
-void sudoku_do_box_pointing_pairs(Sudoku *s)
-{
-    //for every box
-    for (int i = 0; i < 9; i++)
-    {
-        //find the poinitng pairs
-        box_find_pointing_pairs(s, s->boxes[i]);
+        //run the pointing pair with the cell in its row
+        cell_pointing_pair(c, s->nodes, s->rows[cy], s->columns[cx], s->boxes[cb]);
     }
 }
 
