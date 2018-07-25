@@ -53,7 +53,7 @@ char **create_sudoku_string_array_from_file(char *filename, int num_sudokus)
 /**
  * This function frees the sudoku string arrat from memory
  */
-void free_sudoku_string_array(char **array, int size)
+void sudoku_free_string_array(char **array, int size)
 {
     //free every string
     for (int i = 0; i < size; i++)
@@ -88,6 +88,11 @@ int compare_float(const void *a, const void *b)
     return (*(float *)a - *(float *)b);
 }
 
+float floor_n(float n)
+{
+    return (float)((int)n);
+}
+
 /**
  * This function receives a time value in seconds and converts it to
  * human readable string
@@ -109,12 +114,12 @@ char *format_time_seconds(float timeSeconds, char *buff, int buff_size)
     char num_buffer[20];
 
     //get the number of minutes
-    float minutes = floor(timeSeconds / 60.0f);
+    float minutes = floor_n(timeSeconds / 60.0f);
     //get the number of seconds that should be expressed as seconds
     float secondsNotOver60 = timeSeconds - minutes * 60.0f;
-    float seconds = floor(secondsNotOver60);
+    float seconds = floor_n(secondsNotOver60);
 
-    float millis = floor(1000 * (secondsNotOver60 - seconds));
+    float millis = floor_n(1000 * (secondsNotOver60 - seconds));
 
     //if an amount of minutes should be printed
     if (minutes > 0)

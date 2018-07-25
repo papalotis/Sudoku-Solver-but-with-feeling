@@ -24,7 +24,7 @@ int with_pencilmarks = 1;
 int log_stats = 0;
 char log_filename[40] = "logs/logs.txt";
 
-//
+//whether we should print the history of the solution step by step to a file
 int print_history = 0;
 
 #pragma region arguments
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
         }
 
         //free the sudoku we created
-        free_sudoku(s);
+        sudoku_free(s);
     }
 
     if (log_file != NULL)
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
     printf("Total time: %s\n", format_time_seconds(totalTime, timeBuff, 40));
 
     //free the string array
-    free_sudoku_string_array(sud_str_array, num_sudokus);
+    sudoku_free_string_array(sud_str_array, num_sudokus);
     //and the three metric arrays
     free(stepsForEach);
     free(emptyAtStartForEach);

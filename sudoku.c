@@ -4,7 +4,7 @@
 #define INDEX_UNINITIALIZED -2
 #define NO_VALID_POS -1
 
-/*
+/**
 * A sudoku instance represents a sudoku puzzle at a specific state. It contains a
 * sudoku cell array (nodes) that represents all the cells that a sudoku is comprised of.
 * It has an indeces stack that is used to hold the backtracking path in which we
@@ -49,12 +49,12 @@ Sudoku *create_sudoku()
     return s;
 }
 
-/*
+/**
  * This function frees a sudoku instance from memory. First it frees the memory used
  * by each cell that defines the sudoku puzzle. Then it frees the nodes array and
  * the indeces stack. It frees the 3 2d arrays and lastly it frees the memory used by itself
  */
-void free_sudoku(Sudoku *s)
+void sudoku_free(Sudoku *s)
 {
     //for every cell
     for (int i = 0; i < s->size; i++)
@@ -380,7 +380,7 @@ int sudoku_solve_step(Sudoku *s)
     return r;
 }
 
-/*
+/**
  * This function runs the sudoku solving algorithm up until the sudoku is solved
  */
 int sudoku_solve(Sudoku *s, int *result, int *steps)
@@ -442,7 +442,7 @@ int sudoku_do_pencilmarks(Sudoku *s)
         // find naked partners
         sudoku_find_naked_pencilmarks_partners(s);
         //find pointing pairs
-        sudoku_do_pointing_pairs(s);
+        // sudoku_do_pointing_pairs(s);
     }
     else
     {
@@ -490,6 +490,9 @@ int sudoku_num_possible_pencilmarks(Sudoku *s, int *empty_indeces)
     return sum;
 }
 
+/**
+ * Calculates how often each value appears in the sudoku
+ */
 void sudoku_calculate_value_frequency(Sudoku *s)
 {
     for (int i = 0; i < s->size; i++)
@@ -499,7 +502,7 @@ void sudoku_calculate_value_frequency(Sudoku *s)
     }
 }
 
-/*
+/**
  * This function determines the index of the cell that we will run the
  * algorithm next on. The decision is made based on the size of the pencilmakrs
  * stack of each cell. The index of the cell that we want to return is the cell with
@@ -541,7 +544,7 @@ int sudoku_find_next_index(Sudoku *s)
     return (best == NULL) ? NO_VALID_POS : best->index;
 }
 
-/*
+/**
  * This function calculates the pencilmakrs of each cell of the sudoku instance
  */
 void sudoku_calculate_pencilmarks(Sudoku *s)
@@ -562,7 +565,7 @@ void sudoku_calculate_pencilmarks(Sudoku *s)
     }
 }
 
-/*
+/**
  * This function finds hidden signles.
  * https://www.learn-sudoku.com/hidden-singles.html
  */
@@ -594,6 +597,9 @@ void sudoku_find_hidden_pencilmakrs(Sudoku *s)
     }
 }
 
+/**
+ * This function runs the naked partner function on every cell
+ */
 void sudoku_find_naked_pencilmarks_partners(Sudoku *s)
 {
     for (int i = 0; i < s->size; i++)
@@ -657,6 +663,8 @@ void sudoku_fill_rows_columns_boxes_arrays(Sudoku *s)
     }
 }
 
+// TODO this is unused because it is broken for now
+// TODO Fix pointing_pair function is cell
 void sudoku_do_pointing_pairs(Sudoku *s)
 {
     //for every cell
@@ -684,7 +692,7 @@ void sudoku_do_pointing_pairs(Sudoku *s)
 /**
  * This function receives a buffer as input and fills it
  * with the indeces of the cells of the sudoku that are still empty.
- * The function also returns how many cells should still be filled
+ * The function also returns how many cells are empty, i.e. the size of the buffer
  */
 int sudoku_get_empty_indeces(Sudoku *s, int *buf)
 {
@@ -715,7 +723,7 @@ int sudoku_get_empty_indeces(Sudoku *s, int *buf)
     return counter;
 }
 
-/*
+/**
  * This function returns false if two non-empty adjecent nodes have the same value
  * Otherwise true
 */
@@ -755,7 +763,7 @@ int sudoku_is_valid(Sudoku *s)
     return 1;
 }
 
-/*
+/**
  * A sudoku is solved when it's valid and there exists no cell that can still be
  * filled in
  */

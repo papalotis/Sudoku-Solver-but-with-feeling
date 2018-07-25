@@ -34,7 +34,7 @@ typedef struct _Sudoku
 } Sudoku;
 
 Sudoku *create_sudoku();
-void free_sudoku(Sudoku *s);
+void sudoku_free(Sudoku *s);
 int sudoku_set_with_pencilmarks(Sudoku *s, int dp);
 int sudoku_set_print_history(Sudoku *s, int ph);
 char *sudoku_to_string_simple(Sudoku *s, char *buff);

@@ -18,7 +18,7 @@
 void array_print(int *a, int size);
 float getTime();
 char **create_sudoku_string_array_from_file(char *filename, int num_sudokus);
-void free_sudoku_string_array(char **array, int size);
+void sudoku_free_string_array(char **array, int size);
 int strequals(char *s1, char *s2);
 int compare_int(const void *a, const void *b);
 int compare_float(const void *a, const void *b);
