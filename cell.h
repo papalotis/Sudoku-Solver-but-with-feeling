@@ -12,6 +12,9 @@ typedef struct _Cell
     int index;
     int value;
     int *neighbors;
+    int *row_neighbors;
+    int *col_neighbors;
+    int *box_neighbors;
     PSet *pencilmakrs;
 } Cell;
 

@@ -21,6 +21,9 @@ Cell *create_cell()
     c->value = 0;
     c->index = -1;
     c->neighbors = (int *)malloc(sizeof(int) * 20);
+    c->row_neighbors = (int *)malloc(sizeof(int) * 8);
+    c->col_neighbors = (int *)malloc(sizeof(int) * 8);
+    c->box_neighbors = (int *)malloc(sizeof(int) * 8);
     c->pencilmakrs = pencilmarks_set_create();
     return c;
 }
@@ -33,6 +36,9 @@ Cell *create_cell()
 void free_cell(Cell *c)
 {
     free(c->neighbors);
+    free(c->row_neighbors);
+    free(c->col_neighbors);
+    free(c->box_neighbors);
     pencilmarks_set_free(c->pencilmakrs);
     free(c);
 }
@@ -63,7 +69,7 @@ int cell_calculate_x(Cell *c)
 
 /*
  * This function gets the y component of the position of a cell on the 2d grid grid
- * that represents the sudoku puzzle.
+ * that represents the sudoku puzzle. 
 */
 int cell_calculate_y(Cell *c)
 {
@@ -149,6 +155,9 @@ void cell_calculate_neighbor_indeces(Cell *c)
 
     //a counter to know how many cells have been found
     int neigbor_counter = 0;
+    int neigbor_row_counter = 0;
+    int neigbor_col_counter = 0;
+    int neigbor_box_counter = 0;
 
     //loop over all possible indeces
     for (int i = 0; i < 81; i++)
@@ -173,6 +182,21 @@ void cell_calculate_neighbor_indeces(Cell *c)
             c->neighbors[neigbor_counter] = i;
             //increament the counter
             neigbor_counter++;
+            if (cx == ox)
+            {
+                c->col_neighbors[neigbor_col_counter] = i;
+                neigbor_col_counter++;
+            }
+            if (cy == oy)
+            {
+                c->row_neighbors[neigbor_row_counter] = i;
+                neigbor_row_counter++;
+            }
+            if (cb == ob)
+            {
+                c->box_neighbors[neigbor_box_counter] = i;
+                neigbor_box_counter++;
+            }
         }
     }
 
@@ -231,7 +255,7 @@ void cell_calculate_pencilmarks(Cell *c, Cell **sud)
     }
 }
 
-/*
+/**
  * This function finds whether an empty cell has a unique pencilmark
  * compared to all the other empty cells of one of its houses (row, column, box)
  * It receives a cell as input, as well as the cell array that defines the sudoku
@@ -281,6 +305,10 @@ int cell_find_unique_pencilmarks(Cell *c, Cell **sud, int *house_indeces)
     return pencilmarks_set_get_size(c->pencilmakrs) == 1;
 }
 
+/**
+ * TODO: fix this function it is broken
+ * 
+ */
 void cell_pointing_pair(Cell *c, Cell **sud, int *row_indeces, int *col_indeces, int *box_indeces)
 {
 
@@ -378,6 +406,11 @@ void cell_pointing_pair(Cell *c, Cell **sud, int *row_indeces, int *col_indeces,
     }
 }
 
+/**
+ * Finds neighbouring cells that have the exact same pencilmarks as this one in the house
+ * If a cell has as many neighbours that fullfill the above predicate then, we can remove 
+ * these pencilmarks from the rest of the cells
+ */
 void cell_find_naked_partners(Cell *c, Cell **sud, int *house_indeces)
 {
     //if the cell is not empty then we don't want to bother with it
@@ -470,17 +503,4 @@ void cell_get_neighbours_with_same_pencilmarks_in_house(Cell *c, Cell **sud, int
 
     *same_num = same_counter;
     *comp_num = comp_counter;
-}
-
-int cell_calculate_error(Cell *c, Cell **sud)
-{
-    int err = 0;
-    for (int i = 0; i < 20; i++)
-    {
-        Cell *n = sud[c->neighbors[i]];
-        if (c->value == n->value)
-            err++;
-    }
-
-    return err;
 }
